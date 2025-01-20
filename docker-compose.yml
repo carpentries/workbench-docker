@@ -13,6 +13,9 @@ services:
     environment:
       - PASSWORD=rstudio
       - USER=rstudio
+    env_file:
+      - ./workbench-config/workbench.env
+      
     restart: unless-stopped
 
 volumes:

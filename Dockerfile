@@ -22,10 +22,10 @@ RUN apt-get install -y \
 RUN R -e "install.packages('renv', repos = c(CRAN = 'https://cloud.r-project.org'))"
 
 # copy repo config and anything else
-COPY scripts/profile.sh /home/rstudio/workbench/profile.sh
-RUN chown rstudio:rstudio /home/rstudio/workbench/profile.sh
-RUN chmod a+x /home/rstudio/workbench/profile.sh
-RUN /home/rstudio/workbench/profile.sh
+COPY scripts/profile.sh /home/rstudio/.workbench/profile.sh
+RUN chown rstudio:rstudio /home/rstudio/.workbench/profile.sh
+RUN chmod a+x /home/rstudio/.workbench/profile.sh
+RUN /home/rstudio/.workbench/profile.sh
 
 # clean up
 RUN rm -rf /tmp/downloaded_packages
