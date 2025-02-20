@@ -1,4 +1,5 @@
-FROM rocker/rstudio:latest
+# use tidyverse image to get devtools etc
+FROM rocker/tidyverse:latest
 
 SHELL ["/bin/bash", "-c"]
 
@@ -19,16 +20,22 @@ RUN apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # setup base renv for lessons that want to use it
-RUN R -e "install.packages('renv', repos = c(CRAN = 'https://cloud.r-project.org'))"
+RUN R -e 'install.packages(c("renv", "remotes", "httpuv"), repos = c(CRAN = "https://cloud.r-project.org"))'
 
-# copy repo config and anything else
-COPY scripts/profile.sh /home/rstudio/.workbench/profile.sh
-RUN chown rstudio:rstudio /home/rstudio/.workbench/profile.sh
-RUN chmod a+x /home/rstudio/.workbench/profile.sh
-RUN /home/rstudio/.workbench/profile.sh
+ARG SANDPAPER_VER
+ARG VARNISH_VER
+ARG PEGBOARD_VER
+
+# Convert ARG to ENV so they persist inside the container
+ENV SANDPAPER_VER=${SANDPAPER_VER}
+ENV VARNISH_VER=${VARNISH_VER}
+ENV PEGBOARD_VER=${PEGBOARD_VER}
+
+COPY scripts/* /home/rstudio/.workbench/
+RUN chmod +x /home/rstudio/.workbench/*
+RUN source /home/rstudio/.workbench/init_env.sh
+
+RUN Rscript /home/rstudio/.workbench/deps.R
 
 # clean up
 RUN rm -rf /tmp/downloaded_packages
-
-# install workbench deps
-RUN R -e "install.packages(c('sandpaper', 'varnish', 'pegboard', 'httpuv'))"

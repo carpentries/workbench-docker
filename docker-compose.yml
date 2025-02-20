@@ -1,25 +1,42 @@
-version: '3.9'
 services:
-  rstudio:
+  workbench:
+    container_name: carpentries-workbench
+    image: carpentries/workbench-docker:${TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: carpentries-wb-rstudio
+      args:
+        SANDPAPER_VER: ${SANDPAPER_VER}
+        VARNISH_VER: ${VARNISH_VER}
+        PEGBOARD_VER: ${PEGBOARD_VER}
+    volumes:
+      - ${LESSON_PATH:-./lessons}:/home/rstudio/lesson # Mount local lessons directory
+      - ./workbench-config:/home/rstudio/.workbench # Mount custom configurations
+    env_file:
+      - .env
+
+  workbench-rmd:
+    image: carpentries/workbench-docker:${TAG:-latest}
+    container_name: carpentries-workbench-rmd
+    build:
+      context: .
+      dockerfile: Dockerfile-renv
+    volumes:
+      - ${LESSON_PATH:-./lessons}:/home/rstudio/lesson # Mount local lessons directory
+    env_file:
+      - .env
+
+  rstudio:
+    image: carpentries/workbench-docker:${TAG:-latest}
+    container_name: carpentries-workbench-rstudio
+    volumes:
+      - ${LESSON_PATH:-./lessons}:/home/rstudio/lesson # Mount local lessons directory
     ports:
       - "8787:8787"
-    volumes:
-      - ./lessons:/home/rstudio/lessons # Mount local lessons directory
-      - ./workbench-config:/home/rstudio/.workbench # Mount custom configurations
-    environment:
-      - PASSWORD=rstudio
-      - USER=rstudio
     env_file:
-      - ./workbench-config/workbench.env
-      
+      - .env
     restart: unless-stopped
 
 volumes:
-  lessons:
-    driver: local
   workbench-config:
     driver: local

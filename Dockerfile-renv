@@ -1,0 +1,16 @@
+# use tidyverse image to get devtools etc
+FROM carpentries/workbench-docker:latest
+
+SHELL ["/bin/bash", "-c"]
+
+WORKDIR /home/rstudio
+
+COPY scripts/init_env.sh .workbench/
+COPY scripts/deps.R .workbench/
+RUN chmod +x .workbench/*
+RUN source .workbench/init_env.sh
+
+COPY scripts/hydrate_renv.sh .
+
+# clean up
+RUN rm -rf /tmp/downloaded_packages
