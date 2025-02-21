@@ -15,7 +15,6 @@ services:
   workbench-local:
     image: carpentries/workbench-docker:${TAG:-latest}
     volumes:
-      # - ./workbench-config:/home/rstudio/.workbench
       - ${LESSON_PATH:-./lessons}:/home/rstudio/lesson
     environment:
       WORKBENCH_PROFILE: "local"
@@ -31,17 +30,6 @@ services:
       WORKBENCH_PROFILE: "ci"
     env_file:
       - .env
-
-  # rstudio:
-  #   image: carpentries/workbench-docker:${TAG:-latest}
-  #   container_name: carpentries-workbench-rstudio
-  #   volumes:
-  #     - lesson_data:/home/rstudio/lesson # Mount local lessons directory
-  #   ports:
-  #     - "8787:8787"
-  #   env_file:
-  #     - .env
-  #   restart: unless-stopped
 
 volumes:
   workbench-config:
