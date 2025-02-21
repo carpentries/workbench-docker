@@ -53,7 +53,7 @@ if (on_linux && has_lock) {
     }
     Sys.setenv("RENV_PROFILE" = "lesson-requirements")
     Sys.setenv("RSPM_ROOT" = "https://packagemanager.posit.co")
-    vise::lock2desc(renv::paths$lockfile(), desc = "./DESCRIPTION")
-    writeLines(readLines("./DESCRIPTION"))
+    vise::lock2desc(renv::paths$lockfile(), desc = "DESCRIPTION")
+    writeLines(readLines("DESCRIPTION"))
     vise::ci_sysreqs(renv::paths$lockfile(), execute = TRUE)
 }

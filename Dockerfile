@@ -31,15 +31,17 @@ ENV SANDPAPER_VER=${SANDPAPER_VER}
 ENV VARNISH_VER=${VARNISH_VER}
 ENV PEGBOARD_VER=${PEGBOARD_VER}
 
+WORKDIR /home/rstudio
+
 COPY scripts/* /home/rstudio/.workbench/
 RUN chmod +x /home/rstudio/.workbench/*
 RUN source /home/rstudio/.workbench/init_env.sh
 
-RUN Rscript /home/rstudio/.workbench/deps.R
+COPY local_entrypoint.sh .
+RUN chmod +x local_entrypoint.sh
+RUN chown rstudio.rstudio local_entrypoint.sh
 
-# COPY scripts/hydrate_renv.sh .
-COPY scripts/setup_lesson_deps.R .
-COPY scripts/fortify_renv_cache.R .
+RUN Rscript /home/rstudio/.workbench/deps.R
 
 # clean up
 RUN rm -rf /tmp/downloaded_packages

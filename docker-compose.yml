@@ -9,33 +9,39 @@ services:
         SANDPAPER_VER: ${SANDPAPER_VER}
         VARNISH_VER: ${VARNISH_VER}
         PEGBOARD_VER: ${PEGBOARD_VER}
-    volumes:
-      - ${LESSON_PATH:-./lessons}:/home/rstudio/lesson # Mount local lessons directory
-      - ./workbench-config:/home/rstudio/.workbench # Mount custom configurations
     env_file:
       - .env
 
-  workbench-rmd:
+  workbench-local:
     image: carpentries/workbench-docker:${TAG:-latest}
-    container_name: carpentries-workbench-rmd
-    build:
-      context: .
-      dockerfile: Dockerfile-renv
     volumes:
-      - ${LESSON_PATH:-./lessons}:/home/rstudio/lesson # Mount local lessons directory
+      # - ./workbench-config:/home/rstudio/.workbench
+      - ${LESSON_PATH:-./lessons}:/home/rstudio/lesson
+    environment:
+      WORKBENCH_PROFILE: "local"
     env_file:
       - .env
-
-  rstudio:
-    image: carpentries/workbench-docker:${TAG:-latest}
-    container_name: carpentries-workbench-rstudio
-    volumes:
-      - ${LESSON_PATH:-./lessons}:/home/rstudio/lesson # Mount local lessons directory
     ports:
       - "8787:8787"
+    entrypoint: ["/home/rstudio/local_entrypoint.sh"]
+
+  workbench-ci:
+    image: carpentries/workbench-docker:${TAG:-latest}
+    environment:
+      WORKBENCH_PROFILE: "ci"
     env_file:
       - .env
-    restart: unless-stopped
+
+  # rstudio:
+  #   image: carpentries/workbench-docker:${TAG:-latest}
+  #   container_name: carpentries-workbench-rstudio
+  #   volumes:
+  #     - lesson_data:/home/rstudio/lesson # Mount local lessons directory
+  #   ports:
+  #     - "8787:8787"
+  #   env_file:
+  #     - .env
+  #   restart: unless-stopped
 
 volumes:
   workbench-config:
