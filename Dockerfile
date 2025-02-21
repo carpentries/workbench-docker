@@ -37,5 +37,9 @@ RUN source /home/rstudio/.workbench/init_env.sh
 
 RUN Rscript /home/rstudio/.workbench/deps.R
 
+# COPY scripts/hydrate_renv.sh .
+COPY scripts/setup_lesson_deps.R .
+COPY scripts/fortify_renv_cache.R .
+
 # clean up
 RUN rm -rf /tmp/downloaded_packages
