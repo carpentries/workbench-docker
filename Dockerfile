@@ -11,11 +11,20 @@ RUN sudo apt-get install -y git autoconf build-essential
 RUN apt-get install -y \
     jq \
     zlib1g-dev \
-    libxslt1-dev \
-    libxml2-dev \
-    libssl-dev \
     libcurl4-openssl-dev \
-    libfontconfig1-dev \
+    libfontconfig-dev \
+    libfreetype-dev \
+    libfribidi-dev \
+    libharfbuzz-dev \
+    libicu-dev \
+    libgit2-dev \
+    libjpeg-turbo8-dev \
+    libpng-dev \
+    libuv1-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libssl-dev \
+    libtiff-dev \
     pandoc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
