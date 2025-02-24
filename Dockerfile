@@ -15,6 +15,7 @@ RUN apt-get install -y \
     libxml2-dev \
     libssl-dev \
     libcurl4-openssl-dev \
+    libfontconfig1-dev \
     pandoc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
