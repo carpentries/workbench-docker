@@ -1,5 +1,5 @@
 # use tidyverse image to get devtools etc
-FROM rocker/tidyverse:latest
+FROM rocker/rstudio:latest
 
 SHELL ["/bin/bash", "-c"]
 
