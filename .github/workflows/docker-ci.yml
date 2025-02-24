@@ -28,6 +28,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Image (AMD64)
+        id: build
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
@@ -67,6 +68,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Image (ARM64)
+        id: build
         uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
