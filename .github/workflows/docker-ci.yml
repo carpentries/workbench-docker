@@ -32,8 +32,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
-          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true #,push-by-digest=true,
+          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
           push: false
+          load: true
           cache-to: type=gha,scope=amd64
           cache-from: type=gha
 
@@ -43,6 +44,7 @@ jobs:
           digest="${{ steps.build.outputs.digest }}"
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
           ls -lAh "${{ runner.temp }}/digests"
+          echo "IMAGE_DIGEST_AMD64=$digest" >> $GITHUB_ENV
 
       - name: Upload digest
         uses: actions/upload-artifact@v4
@@ -50,6 +52,17 @@ jobs:
           name: digests-amd64
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
+          retention-days: 1
+
+      - name: Save Image to Tar File
+        run: |
+          docker save ${{ env.DOCKERHUB_REPO }} -o ${{ env.IMAGE_DIGEST_AMD64 }}.tar
+
+      - name: Upload Image as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-amd64
+          path: ${{ env.IMAGE_DIGEST_AMD64 }}.tar
           retention-days: 1
 
   build-arm64:
@@ -145,25 +158,15 @@ jobs:
           rm -rf lesson_tmp/
           ls -lAh ${{ github.workspace }}/lesson
 
-    #   - name: Download Digest
-    #     uses: actions/download-artifact@v4
-    #     with:
-    #       name: digests-amd64
-    #       path: ${{ runner.temp }}/digests
+      - name: Download Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: image-amd64
 
-    #   - name: Set Image Reference
-    #     run: |
-    #       digest_dir="${{ runner.temp }}/digests"
-    #       digest="$(ls $digest_dir | head -n 1)"
-    #       echo "IMAGE_REF=${{ env.DOCKERHUB_REPO }}@sha256:$digest" >> $GITHUB_ENV
-
-      - name: Image Debug Info
+      - name: Load Image into Docker
         run: |
+          docker load -i ${{ env.IMAGE_DIGEST_AMD64 }}.tar
           docker images --digests
-
-    #   - name: Load Cached Image
-    #     run: |
-    #       docker buildx imagetools inspect ${{ env.IMAGE_REF }}
 
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
