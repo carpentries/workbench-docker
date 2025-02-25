@@ -73,8 +73,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
-          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true #,push-by-digest=true,
+          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
           push: false
+          load: true
           cache-to: type=gha,scope=arm64
           cache-from: type=gha
 
@@ -83,7 +84,6 @@ jobs:
           mkdir -p ${{ runner.temp }}/digests
           digest="${{ steps.build.outputs.digest }}"
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
-          ls -lAh "${{ runner.temp }}/digests"
 
       - name: Upload digest
         uses: actions/upload-artifact@v4
@@ -145,32 +145,32 @@ jobs:
           rm -rf lesson_tmp/
           ls -lAh ${{ github.workspace }}/lesson
 
-      - name: Download Digest
-        uses: actions/download-artifact@v4
-        with:
-          name: digests-amd64
-          path: ${{ runner.temp }}/digests
+    #   - name: Download Digest
+    #     uses: actions/download-artifact@v4
+    #     with:
+    #       name: digests-amd64
+    #       path: ${{ runner.temp }}/digests
 
-      - name: Set Image Reference
-        run: |
-          digest_dir="${{ runner.temp }}/digests"
-          digest="$(ls $digest_dir | head -n 1)"
-          echo "IMAGE_REF=${{ env.DOCKERHUB_REPO }}@sha256:$digest" >> $GITHUB_ENV
+    #   - name: Set Image Reference
+    #     run: |
+    #       digest_dir="${{ runner.temp }}/digests"
+    #       digest="$(ls $digest_dir | head -n 1)"
+    #       echo "IMAGE_REF=${{ env.DOCKERHUB_REPO }}@sha256:$digest" >> $GITHUB_ENV
 
       - name: Image Debug Info
         run: |
-          echo "${{ env.IMAGE_REF }}"
+          docker images --digests
 
-      - name: Load Cached Image
-        run: |
-          docker buildx imagetools inspect ${{ env.IMAGE_REF }}
+    #   - name: Load Cached Image
+    #     run: |
+    #       docker buildx imagetools inspect ${{ env.IMAGE_REF }}
 
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
           -v ${{ github.workspace }}/lesson/${{ matrix.lesson }}:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.IMAGE_REF }} \
+          ${{ env.DOCKERHUB_REPO }} \
           Rscript run-tests.R
 
       - name: Cleanup
