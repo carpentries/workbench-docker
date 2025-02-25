@@ -149,15 +149,19 @@ jobs:
           path: ${{ runner.temp }}/digests
           # pattern: digests-amd64
 
+      - name: Digest Debug Info
+        run: |
+          ls -lAh ${{ runner.temp }}/digests
+
       - name: Set Image Reference
         run: |
-          digest_file="${{ runner.temp }}/digests/digests-amd64"
+          digest_dir="${{ runner.temp }}/digests"
+          digest_file="$digest_dir/$(ls $digest_file | head -n 1)"
           digest=$(cat "$digest_file")
           echo "IMAGE_REF=${{ env.DOCKERHUB_REPO }}@sha256:$digest" >> $GITHUB_ENV
 
-      - name: Debug Info
+      - name: Image Debug Info
         run: |
-          ls -lAh ${{ runner.temp }}/digests
           echo "IMAGE_REF=${{ env.IMAGE_REF }}"
 
       - name: Load Cached Image
