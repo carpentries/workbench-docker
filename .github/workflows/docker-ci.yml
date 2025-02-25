@@ -179,7 +179,7 @@ jobs:
           -v ${{ github.workspace }}/lesson/${{ matrix.lesson }}:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }} \
-          Rscript run-tests.R
+          Rscript run_tests.R
 
       - name: Cleanup
         run: |
