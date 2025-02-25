@@ -134,47 +134,49 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ matrix.lesson }}
-          path: lesson
+          path: lesson_tmp
 
       - name: "Copy Lesson"
         if: "${{ matrix.lesson != '' }}"
         run: |
-          cp -r lesson/* .
-          rm -rf lesson/
+          pwd
+          mkdir -p ${{ github.workspace }}/lesson
+          cp -r lesson_tmp/* ${{ github.workspace }}/lesson
+          rm -rf lesson_tmp/
+          ls -lAh ${{ github.workspace }}/lesson
 
       - name: Download Digest
         uses: actions/download-artifact@v4
         with:
           name: digests-amd64
           path: ${{ runner.temp }}/digests
-          # pattern: digests-amd64
-
-      - name: Digest Debug Info
-        run: |
-          ls -lAh ${{ runner.temp }}/digests
 
       - name: Set Image Reference
         run: |
           digest_dir="${{ runner.temp }}/digests"
-          digest_file="$digest_dir/$(ls $digest_dir | head -n 1)"
-          digest=$(cat "$digest_file")
+          digest="$(ls $digest_dir | head -n 1)"
           echo "IMAGE_REF=${{ env.DOCKERHUB_REPO }}@sha256:$digest" >> $GITHUB_ENV
 
       - name: Image Debug Info
         run: |
-          echo "IMAGE_REF=${{ env.IMAGE_REF }}"
+          echo "${{ env.IMAGE_REF }}"
 
       - name: Load Cached Image
         run: |
-          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_REF }}
+          docker buildx imagetools inspect ${{ env.IMAGE_REF }}
 
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
           -v ${{ github.workspace }}/lesson/${{ matrix.lesson }}:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_REF }} \
+          ${{ env.IMAGE_REF }} \
           Rscript run-tests.R
+
+      - name: Cleanup
+        run: |
+          rm -rf ${{ runner.temp }}/digests
+          rm -rf ${{ github.workspace }}/lesson
 
   publish:
     if: (github.event_name == 'release' && github.repository == 'carpentries/workbench-docker')
