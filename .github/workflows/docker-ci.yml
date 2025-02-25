@@ -94,7 +94,7 @@ jobs:
   lesson-test:
     needs:
       - build-amd64
-      - build-arm64
+      # - build-arm64 # not needed for tests
     permissions:
       checks: write
       contents: write
@@ -142,14 +142,14 @@ jobs:
 
       - name: Load Cached Image
         run: |
-          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.outputs.tags }}
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.build.outputs.tags }}
 
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
           -v ${{ github.workspace }}/lesson/${{ matrix.lesson }}:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.outputs.tags }} \
+          ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.build.outputs.tags }} \
           Rscript run-tests.R
 
   publish:
