@@ -91,11 +91,70 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  lesson-test:
+    permissions:
+      checks: write
+      contents: write
+      pages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        lesson: [carpentries/instructor-training, datacarpentry/r-socialsci, carpentries/sandpaper-docs, datacarpentry/r-raster-vector-geospatial, datacarpentry/ecology-workshop]
+        experimental: [false]
+        include:
+          - lesson: carpentries/instructor-training
+            lesson-name: Instructor Training
+          - lesson: datacarpentry/r-socialsci
+            lesson-name: R for Social Scientists
+          - lesson: carpentries/sandpaper-docs
+            lesson-name: Workbench Documentation
+          - lesson: datacarpentry/r-raster-vector-geospatial
+            lesson-name: Raster and Vector Geospatial Data with R
+            experimental: true
+          - lesson: datacarpentry/ecology-workshop
+            lesson-name: Ecology Workshop
+            experimental: true
+    name: ${{ matrix.lesson-name }}
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
+    defaults:
+      run:
+        shell: bash # forces 'Git for Windows' on Windows
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      RENV_PATHS_ROOT: ~/.local/share/renv/
+    steps:
+      - name: "Checkout Lesson"
+        if: "${{ matrix.lesson != '' }}"
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.lesson }}
+          path: lesson
+
+      - name: "Copy Lesson"
+        if: "${{ matrix.lesson != '' }}"
+        run: |
+          cp -r lesson/* .
+          rm -rf lesson/
+
+      - name: Load Cached Image
+        run: |
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.outputs.tags }}
+
+      - name: Run Tests on ${{ matrix.lesson }}
+        run: |
+          docker run --rm --platform=${{ matrix.platform }} \
+          -v ${{ github.workspace }}/lesson/${{ matrix.lesson }}:/home/rstudio/lesson \
+          -w /home/rstudio/lesson \
+          ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.outputs.tags }} \
+          Rscript run-tests.R
+
   publish:
     if: (github.event_name == 'release' && github.repository == 'carpentries/workbench-docker')
     needs:
       - build-amd64
       - build-arm64
+      - lesson-test
     runs-on: ubuntu-latest
     steps:
       - name: Login to Docker Hub
@@ -121,7 +180,7 @@ jobs:
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ steps.meta.outputs.tags }}
-          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",push-by-digest=true,name-canonical=true,push=true          
+          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=amd64
 
       - name: Push ARM64 image
@@ -131,7 +190,7 @@ jobs:
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ steps.meta.outputs.tags }}
-          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",push-by-digest=true,name-canonical=true,push=true          
+          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=arm64
 
   merge:

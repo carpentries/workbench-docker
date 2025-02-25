@@ -11,6 +11,7 @@ if (on_linux) {
 repos <- list(
     RSPM        = Sys.getenv("RSPM"),
     carpentries = "https://carpentries.r-universe.dev/",
+    ropensci    = "https://ropensci.r-universe.dev/",
     archive     = "https://carpentries.github.io/drat/",
     CRAN        = "https://cran.rstudio.com"
 )
