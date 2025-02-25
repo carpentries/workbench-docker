@@ -147,15 +147,6 @@ jobs:
           repository: ${{ matrix.lesson }}
           path: lesson_tmp
 
-    #   - name: "Copy Lesson"
-    #     if: "${{ matrix.lesson != '' }}"
-    #     run: |
-    #       pwd
-    #       mkdir -p ${{ github.workspace }}/lesson
-    #       cp -r lesson_tmp/* ${{ github.workspace }}/lesson
-    #       rm -rf lesson_tmp/
-    #       ls -lAh ${{ github.workspace }}/lesson
-
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
@@ -173,7 +164,7 @@ jobs:
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }}:amd64 \
-          Rscript /home/rstudio/.workbench/run_tests.R
+          /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
 
       - name: Cleanup
         run: |

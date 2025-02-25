@@ -26,6 +26,7 @@ RUN apt-get install -y \
     libssl-dev \
     libtiff-dev \
     pandoc \
+    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
