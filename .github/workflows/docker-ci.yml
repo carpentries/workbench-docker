@@ -147,14 +147,14 @@ jobs:
           repository: ${{ matrix.lesson }}
           path: lesson_tmp
 
-      - name: "Copy Lesson"
-        if: "${{ matrix.lesson != '' }}"
-        run: |
-          pwd
-          mkdir -p ${{ github.workspace }}/lesson
-          cp -r lesson_tmp/* ${{ github.workspace }}/lesson
-          rm -rf lesson_tmp/
-          ls -lAh ${{ github.workspace }}/lesson
+    #   - name: "Copy Lesson"
+    #     if: "${{ matrix.lesson != '' }}"
+    #     run: |
+    #       pwd
+    #       mkdir -p ${{ github.workspace }}/lesson
+    #       cp -r lesson_tmp/* ${{ github.workspace }}/lesson
+    #       rm -rf lesson_tmp/
+    #       ls -lAh ${{ github.workspace }}/lesson
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -170,7 +170,7 @@ jobs:
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
-          -v ${{ github.workspace }}/lesson/${{ matrix.lesson }}:/home/rstudio/lesson \
+          -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }}:amd64 \
           Rscript /home/rstudio/.workbench/run_tests.R
@@ -178,7 +178,7 @@ jobs:
       - name: Cleanup
         run: |
           rm -rf ${{ runner.temp }}/digests
-          rm -rf ${{ github.workspace }}/lesson
+          rm -rf ${{ github.workspace }}/lesson_tmp
 
   publish:
     if: (github.event_name == 'release' && github.repository == 'carpentries/workbench-docker')
