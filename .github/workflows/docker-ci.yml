@@ -40,13 +40,6 @@ jobs:
           cache-to: type=gha,scope=amd64
           cache-from: type=gha
 
-    #   - name: Build Docker Tarball (AMD64)
-    #     uses: docker/build-push-action@v6
-    #     with:
-    #       tags: ${{ env.DOCKERHUB_REPO }}:latest
-    #       type=docker,dest=${{ runner.temp }}/workbench-amd64.tar
-    #       cache-from: type=gha,scope=amd64
-
       - name: Export digest
         run: |
           mkdir -p ${{ runner.temp }}/digests
@@ -93,6 +86,7 @@ jobs:
           platforms: linux/arm64
           outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
           push: false
+          tags: ${{ env.DOCKERHUB_REPO }}:arm64
           cache-to: type=gha,scope=arm64
           cache-from: type=gha
 
@@ -178,7 +172,7 @@ jobs:
           docker run --rm --platform=${{ matrix.platform }} \
           -v ${{ github.workspace }}/lesson/${{ matrix.lesson }}:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }} \
+          ${{ env.DOCKERHUB_REPO }}:amd64 \
           Rscript /home/rstudio/.workbench/run_tests.R
 
       - name: Cleanup
