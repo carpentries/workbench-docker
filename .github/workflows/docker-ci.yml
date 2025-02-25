@@ -56,7 +56,9 @@ jobs:
 
       - name: Save Image to Tar File
         run: |
-          docker save ${{ env.DOCKERHUB_REPO }} -o ${{ env.IMAGE_DIGEST_AMD64 }}.tar
+          echo "${{ steps.build.outputs.metadata }}"
+          docker images --digests
+          docker save ${{ env.DOCKERHUB_REPO }}:main -o ${{ env.IMAGE_DIGEST_AMD64 }}.tar
 
       - name: Upload Image as Artifact
         uses: actions/upload-artifact@v4
