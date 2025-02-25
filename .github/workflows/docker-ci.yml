@@ -140,16 +140,32 @@ jobs:
           cp -r lesson/* .
           rm -rf lesson/
 
+      - name: Download Digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+
+      - name: Set Image Reference
+        run: |
+          digest_file="${{ runner.temp }}/digests/digests-amd64/*"
+          digest=$(cat "$digest_file")
+          echo "IMAGE_REF=${{ env.DOCKERHUB_REPO }}@sha256:$digest" >> $GITHUB_ENV
+
+      - name: Debug Info
+        run: |
+          echo "IMAGE_REF=${{ env.IMAGE_REF }}"
+
       - name: Load Cached Image
         run: |
-          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.build.outputs.tags }}
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_REF }}
 
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
           -v ${{ github.workspace }}/lesson/${{ matrix.lesson }}:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.build.outputs.tags }} \
+          ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_REF }} \
           Rscript run-tests.R
 
   publish:
