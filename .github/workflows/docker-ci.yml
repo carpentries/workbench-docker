@@ -156,7 +156,7 @@ jobs:
       - name: Set Image Reference
         run: |
           digest_dir="${{ runner.temp }}/digests"
-          digest_file="$digest_dir/$(ls $digest_file | head -n 1)"
+          digest_file="$digest_dir/$(ls $digest_dir | head -n 1)"
           digest=$(cat "$digest_file")
           echo "IMAGE_REF=${{ env.DOCKERHUB_REPO }}@sha256:$digest" >> $GITHUB_ENV
 
