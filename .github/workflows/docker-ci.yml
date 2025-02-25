@@ -92,6 +92,9 @@ jobs:
           retention-days: 1
 
   lesson-test:
+    needs:
+      - build-amd64
+      - build-arm64
     permissions:
       checks: write
       contents: write
