@@ -25,7 +25,8 @@ cat("::endgroup::\n")
 
 # Fortify local {renv} packages
 cat("::group::Fortify local {renv} packages\n")
-wd <- '.'
+
+wd <- getwd()
 req <- function(pkg) {
     if (!requireNamespace(pkg, quietly = TRUE))
         install.packages(pkg)

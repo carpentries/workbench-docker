@@ -1,5 +1,7 @@
-source(setup_lesson_deps.R)
-source(fortify_renv_cache.R)
+setwd("/home/rstudio/lesson")
+
+source("/home/rstudio/.workbench/setup_lesson_deps.R")
+source("/home/rstudio/.workbench/fortify_renv_cache.R")
 
 library(sandpaper)
 sandpaper::package_cache_trigger(TRUE)
