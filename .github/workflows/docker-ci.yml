@@ -137,20 +137,15 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       RENV_PATHS_ROOT: ~/.local/share/renv/
     steps:
-      - name: "Checkout Lesson"
+      - name: Checkout Lesson
         if: "${{ matrix.lesson != '' }}"
         uses: actions/checkout@v4
         with:
           repository: ${{ matrix.lesson }}
           path: lesson_tmp
 
-      - name: "Copy Lesson"
-        if: "${{ matrix.lesson != '' }}"
-        run: |
-          mkdir -p lesson
-          cp -r lesson_tmp/* lesson
-          chmod -R 777 lesson
-          rm -rf lesson_tmp/
+      - name: Set Permissions for Lesson Dir
+        run: sudo chown -R 1001:121 ${{ github.workspace }}/lesson_tmp
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -166,10 +161,11 @@ jobs:
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
-          -v ${{ github.workspace }}/lesson:/home/rstudio/lesson \
+          --user 1001:121 \
+          -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }}:amd64 \
-          /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
+          /bin/bash -c "exec /home/rstudio/.workbench/lesson_pre_prep.sh"
 
   publish:
     if: (github.event_name == 'release' && github.repository == 'carpentries/workbench-docker')
