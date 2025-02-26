@@ -166,11 +166,6 @@ jobs:
           ${{ env.DOCKERHUB_REPO }}:amd64 \
           /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
 
-      - name: Cleanup
-        run: |
-          rm -rf ${{ runner.temp }}/digests
-          rm -rf ${{ github.workspace }}/lesson_tmp
-
   publish:
     if: (github.event_name == 'release' && github.repository == 'carpentries/workbench-docker')
     needs:
