@@ -162,10 +162,16 @@ jobs:
 
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
+          r_uid=$(id -u)
+          r_gid=$(id -g)
+
+          echo "Running tests on ${{ matrix.lesson }} as $r_uid:$r_gid"
+
           docker run --rm --platform=${{ matrix.platform }} \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }}:amd64 \
+          --user $r_uid:$r_gid \
           /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
 
   publish:
