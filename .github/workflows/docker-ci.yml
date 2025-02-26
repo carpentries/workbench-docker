@@ -146,7 +146,6 @@ jobs:
 
       - name: Set Permissions for Lesson Dir
         run: |
-          sudo chown -R 1001:121 ${{ github.workspace }}/lesson_tmp
           sudo chmod -R 777 ${{ github.workspace }}/lesson_tmp
           ls -lAh ${{ github.workspace }}/lesson_tmp
 

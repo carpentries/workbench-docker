@@ -3,7 +3,7 @@
 # Mark Repository as Safe
 git config --global --add safe.directory /home/rstudio/lesson
 
-echo "Running as $UID $GID"
+echo "Running as $(whoami) $(id -u) $(id -g)"
 ls -lAh /home/rstudio/lesson
 
 cd /home/rstudio/lesson
