@@ -28,7 +28,8 @@ req <- function(pkg, ...) {
         install.packages(pkg, ...)
     }
 }
-wd <- getwd()
+
+wd <- "."
 has_lock <- file.exists(file.path(wd, 'renv'))
 if (on_linux && has_lock) {
     req("renv")

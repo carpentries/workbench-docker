@@ -144,11 +144,9 @@ jobs:
           repository: ${{ matrix.lesson }}
           path: lesson_tmp
 
-      - name: Lesson Information
+      - name: Debug Lesson Files
         run: |
-          ls -lAh lesson_tmp
           ls -lAh ${{ github.workspace }}/lesson_tmp
-          cat lesson_tmp/DESCRIPTION
 
       - name: Download artifact
         uses: actions/download-artifact@v4
