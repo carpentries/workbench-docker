@@ -144,9 +144,13 @@ jobs:
           repository: ${{ matrix.lesson }}
           path: lesson_tmp
 
-      - name: Debug Lesson Files
+      - name: "Copy Lesson"
+        if: "${{ matrix.lesson != '' }}"
         run: |
-          ls -lAh ${{ github.workspace }}/lesson_tmp
+          mkdir -p lesson
+          cp -r lesson_tmp/* lesson
+          chmod -R 777 lesson
+          rm -rf lesson_tmp/
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -162,7 +166,7 @@ jobs:
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
-          -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
+          -v ${{ github.workspace }}/lesson:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }}:amd64 \
           /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"

@@ -23,9 +23,6 @@ cat("Repositories Used")
 print(getOption("repos"))
 cat("::endgroup::\n")
 
-# Fortify local {renv} packages
-cat("::group::Fortify local {renv} packages\n")
-
 wd <- "."
 req <- function(pkg) {
     if (!requireNamespace(pkg, quietly = TRUE))
