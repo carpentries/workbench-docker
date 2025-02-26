@@ -145,7 +145,10 @@ jobs:
           path: lesson_tmp
 
       - name: Set Permissions for Lesson Dir
-        run: sudo chown -R 1001:121 ${{ github.workspace }}/lesson_tmp
+        run: |
+          sudo chown -R 1001:121 ${{ github.workspace }}/lesson_tmp
+          sudo chmod -R 777 ${{ github.workspace }}/lesson_tmp
+          ls -lAh ${{ github.workspace }}/lesson_tmp
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -161,11 +164,10 @@ jobs:
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm --platform=${{ matrix.platform }} \
-          --user 1001:121 \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }}:amd64 \
-          /bin/bash -c "exec /home/rstudio/.workbench/lesson_pre_prep.sh"
+          /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
 
   publish:
     if: (github.event_name == 'release' && github.repository == 'carpentries/workbench-docker')
