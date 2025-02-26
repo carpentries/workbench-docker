@@ -171,7 +171,7 @@ jobs:
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }}:amd64 \
-          /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
+          /bin/bash -c "ls -lAh /home/rstudio/.workbench && /home/rstudio/.workbench/lesson_pre_prep.sh"
 
   publish:
     if: (github.event_name == 'release' && github.repository == 'carpentries/workbench-docker')
