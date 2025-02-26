@@ -5,7 +5,8 @@ source("/home/rstudio/.workbench/fortify_renv_cache.R")
 
 library(sandpaper)
 sandpaper::package_cache_trigger(TRUE)
-sandpaper:::ci_deploy(reset = TRUE,
-  md_branch = "markdown",
-  site_branch = "site"
-)
+# sandpaper:::ci_deploy(reset = TRUE,
+#   md_branch = "markdown",
+#   site_branch = "site"
+# )
+sandpaper::build_lesson()
