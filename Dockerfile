@@ -46,7 +46,7 @@ WORKDIR /home/rstudio
 
 COPY scripts/* /home/rstudio/.workbench/
 RUN chmod +x /home/rstudio/.workbench/*
-RUN chown rstudio.rstudio /home/rstudio/.workbench/*
+RUN chown -R rstudio.rstudio /home/rstudio/.workbench
 RUN source /home/rstudio/.workbench/init_env.sh
 
 COPY local_entrypoint.sh .
