@@ -57,5 +57,9 @@ if (on_linux && has_lock) {
     Sys.setenv("RSPM_ROOT" = "https://packagemanager.posit.co")
     vise::lock2desc(renv::paths$lockfile(), desc = "DESCRIPTION")
     writeLines(readLines("DESCRIPTION"))
-    vise::ci_sysreqs(renv::paths$lockfile(), execute = TRUE)
+
+    # hack to get around sudo being hardcoded into vise apt-get update
+    if (on_linux) system("apt-get update")
+
+    vise::ci_sysreqs(renv::paths$lockfile(), execute = TRUE, sudo = FALSE)
 }
