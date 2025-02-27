@@ -115,17 +115,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # lesson: [carpentries/instructor-training, datacarpentry/r-socialsci, carpentries/sandpaper-docs, datacarpentry/r-raster-vector-geospatial, datacarpentry/ecology-workshop]
-        lesson: [datacarpentry/ecology-workshop]
+        lesson: [carpentries/instructor-training, datacarpentry/r-socialsci, carpentries/sandpaper-docs, datacarpentry/r-raster-vector-geospatial, datacarpentry/ecology-workshop]
         include:
-        #   - lesson: carpentries/instructor-training
-        #     lesson-name: Instructor Training
-        #   - lesson: datacarpentry/r-socialsci
-        #     lesson-name: R for Social Scientists
-        #   - lesson: carpentries/sandpaper-docs
-        #     lesson-name: Workbench Documentation
-        #   - lesson: datacarpentry/r-raster-vector-geospatial
-        #     lesson-name: Raster and Vector Geospatial Data with R
+          - lesson: carpentries/instructor-training
+            lesson-name: Instructor Training
+          - lesson: datacarpentry/r-socialsci
+            lesson-name: R for Social Scientists
+          - lesson: carpentries/sandpaper-docs
+            lesson-name: Workbench Documentation
+          - lesson: datacarpentry/r-raster-vector-geospatial
+            lesson-name: Raster and Vector Geospatial Data with R
           - lesson: datacarpentry/ecology-workshop
             lesson-name: Ecology Workshop
     name: ${{ matrix.lesson-name }}
