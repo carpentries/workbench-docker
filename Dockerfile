@@ -53,7 +53,7 @@ WORKDIR /home/rstudio
 
 COPY scripts/* /home/rstudio/.workbench/
 RUN chmod +x /home/rstudio/.workbench/*
-RUN chown -R rstudio.rstudio /home/rstudio/.workbench
+RUN chown -R rstudio:rstudio /home/rstudio/.workbench
 RUN source /home/rstudio/.workbench/init_env.sh
 
 RUN Rscript /home/rstudio/.workbench/deps.R
@@ -63,11 +63,12 @@ RUN rm -rf /tmp/downloaded_packages
 
 COPY .env /home/rstudio/.env
 RUN chmod +rx /home/rstudio/.env
+RUN chown rstudio:rstudio /home/rstudio/.env
 
 COPY local_entrypoint.sh .
 RUN chmod +x local_entrypoint.sh
-RUN chown rstudio.rstudio local_entrypoint.sh
+RUN chown rstudio:rstudio local_entrypoint.sh
 
 COPY start.sh .
 RUN chmod +x start.sh
-RUN chown rstudio.rstudio start.sh
+RUN chown rstudio:rstudio start.sh
