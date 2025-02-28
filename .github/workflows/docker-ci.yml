@@ -37,7 +37,7 @@ jobs:
             type=docker,dest=${{ runner.temp }}/workbench-amd64.tar
           push: false
           tags: ${{ env.DOCKERHUB_REPO }}:amd64
-          cache-to: ${{ github.event_name == 'push' && 'type=gha,mode=max,scope=amd64' || '' }}
+          cache-to: ${{ (github.event_name == 'push' || github.event_name == 'release') && 'type=gha,mode=max,scope=amd64' || '' }}
           cache-from: type=gha,scope=amd64
 
       - name: Export digest
@@ -87,7 +87,7 @@ jobs:
           outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
           push: false
           tags: ${{ env.DOCKERHUB_REPO }}:arm64
-          cache-to: ${{ github.event_name == 'push' && 'type=gha,mode=max,scope=arm64' || '' }}
+          cache-to: ${{ (github.event_name == 'push' || github.event_name == 'release') && 'type=gha,mode=max,scope=amd64' || '' }}
           cache-from: type=gha,scope=arm64
 
       - name: Export digest
