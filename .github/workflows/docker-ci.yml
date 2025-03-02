@@ -28,7 +28,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Image (AMD64)
-        id: build
+        id: build_amd64
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
@@ -43,7 +43,7 @@ jobs:
       - name: Export digest
         run: |
           mkdir -p ${{ runner.temp }}/digests
-          digest="${{ steps.build.outputs.digest }}"
+          digest="${{ steps.build_amd64.outputs.digest }}"
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
           ls -lAh "${{ runner.temp }}/digests"
           echo "IMAGE_DIGEST_AMD64=$digest" >> $GITHUB_ENV
@@ -64,7 +64,7 @@ jobs:
           retention-days: 1
 
   build-arm64:
-    if: github.event_name == 'release' || (startsWith(github.ref_name, 'release-') && github.event_name == 'push') && github.repository == 'carpentries/workbench-docker'
+    if: (github.event_name == 'release' || (startsWith(github.ref_name, 'release-') && github.event_name == 'push')) && github.repository == 'carpentries/workbench-docker'
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout repo
@@ -81,21 +81,25 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Image (ARM64)
-        id: build
+        id: build_arm64
         uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
-          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
+          outputs: |
+            type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
+            type=docker,dest=${{ runner.temp }}/workbench-arm64.tar
           push: false
           tags: ${{ env.DOCKERHUB_REPO }}:arm64
-          cache-to: ${{ (github.event_name == 'push' || github.event_name == 'release') && 'type=gha,mode=max,scope=arm64' || '' }}
+          cache-to: type=gha,mode=max,scope=arm64
           cache-from: type=gha,scope=arm64
 
       - name: Export digest
         run: |
           mkdir -p ${{ runner.temp }}/digests
-          digest="${{ steps.build.outputs.digest }}"
+          digest="${{ steps.build_arm64.outputs.digest }}"
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
+          ls -lAh "${{ runner.temp }}/digests"
+          echo "IMAGE_DIGEST_ARM64=$digest" >> $GITHUB_ENV
 
       - name: Upload digest
         uses: actions/upload-artifact@v4
@@ -103,6 +107,13 @@ jobs:
           name: digests-arm64
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload Tarball as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-arm64
+          path: ${{ runner.temp }}/workbench-arm64.tar
           retention-days: 1
 
   push-test:
@@ -162,7 +173,6 @@ jobs:
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm \
-          --platform=${{ matrix.platform }} \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }}:amd64 \
@@ -220,17 +230,15 @@ jobs:
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm \
-          --platform=${{ matrix.platform }} \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }}:amd64 \
           /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
 
-  publish:
+  publish-amd64:
     if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
     needs:
       - build-amd64
-      - build-arm64
       - push-test
       - publish-test
     runs-on: ubuntu-latest
@@ -260,20 +268,44 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha,scope=amd64
 
-      - name: Push ARM64 image
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/arm64
-          push: true
-          labels: ${{ steps.meta.outputs.labels }}
-          tags: ${{ steps.meta.outputs.tags }}
-          cache-from: type=gha,scope=arm64
+  publish-arm64:
+    if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
+    needs:
+        - build-arm64
+        - publish-test
+    runs-on: ubuntu-latest
+    steps:
+        - name: Login to Docker Hub
+          uses: docker/login-action@v3
+          with:
+            username: ${{ vars.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+        - name: Docker meta
+          id: meta
+          uses: docker/metadata-action@v5
+          with:
+            images: |
+              ${{ env.DOCKERHUB_REPO }}
+
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+
+        - name: Push ARM64 image
+          uses: docker/build-push-action@v6
+          with:
+            platforms: linux/arm64
+            push: true
+            labels: ${{ steps.meta.outputs.labels }}
+            tags: ${{ steps.meta.outputs.tags }}
+            cache-from: type=gha,scope=arm64
 
   merge:
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
     needs:
-      - publish
+      - publish-amd64
+      - publish-arm64
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
