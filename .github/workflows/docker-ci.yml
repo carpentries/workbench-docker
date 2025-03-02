@@ -64,7 +64,7 @@ jobs:
           retention-days: 1
 
   build-arm64:
-    if: (startsWith(github.ref_name, 'release-') && github.repository == 'carpentries/workbench-docker')
+    if: github.event_name == 'release' || (startsWith(github.ref_name, 'release-') && github.event_name == 'push') && github.repository == 'carpentries/workbench-docker'
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout repo
@@ -105,7 +105,8 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  lesson-test:
+  push-test:
+    if: github.event_name == 'release' || (startsWith(github.ref_name, 'release-') && github.event_name == 'push') && github.repository == 'carpentries/workbench-docker'
     needs:
       - build-amd64
     permissions:
@@ -115,19 +116,74 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dorelease:
-          - ${{ github.event_name == 'release' }}
-        lesson: [carpentries/instructor-training, datacarpentry/ecology-workshop, carpentries/sandpaper-docs, datacarpentry/r-socialsci]
+        lesson: [carpentries/instructor-training, swcarpentry/shell-novice, datacarpentry/ecology-workshop, carpentries/sandpaper-docs]
         include:
           - lesson: carpentries/instructor-training
             lesson-name: Instructor Training
+          - lesson: swcarpentry/shell-novice
+            lesson-name: Shell Novice
           - lesson: datacarpentry/ecology-workshop
             lesson-name: Ecology Workshop
           - lesson: carpentries/sandpaper-docs
             lesson-name: Workbench Documentation
+
+    name: ${{ matrix.lesson-name }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash # forces 'Git for Windows' on Windows
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      RENV_PATHS_ROOT: ~/.local/share/renv/
+    steps:
+      - name: Checkout Lesson
+        if: "${{ matrix.lesson != '' }}"
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.lesson }}
+          path: lesson_tmp
+
+      - name: Set Permissions for Lesson Dir
+        run: |
+          chmod -R 777 ${{ github.workspace }}/lesson_tmp
+          ls -lAh ${{ github.workspace }}/lesson_tmp
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-amd64
+          path: ${{ runner.temp }}
+
+      - name: Load image
+        run: |
+          docker load --input ${{ runner.temp }}/workbench-amd64.tar
+          docker image ls -a
+
+      - name: Run Tests on ${{ matrix.lesson }}
+        run: |
+          docker run --rm \
+          --platform=${{ matrix.platform }} \
+          -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
+          -w /home/rstudio/lesson \
+          ${{ env.DOCKERHUB_REPO }}:amd64 \
+          /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
+
+  publish-test:
+    if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
+    needs:
+      - build-amd64
+      - push-test
+    permissions:
+      checks: write
+      contents: write
+      pages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        lesson: [datacarpentry/r-socialsci]
+        include:
           - lesson: datacarpentry/r-socialsci
             lesson-name: R for Social Scientists
-            dorelease: true
 
     name: ${{ matrix.lesson-name }}
     runs-on: ubuntu-latest
@@ -171,11 +227,12 @@ jobs:
           /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
 
   publish:
-    if: (github.event_name == 'release' && github.repository == 'carpentries/workbench-docker')
+    if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
     needs:
       - build-amd64
       - build-arm64
-      - lesson-test
+      - push-test
+      - publish-test
     runs-on: ubuntu-latest
     steps:
       - name: Login to Docker Hub
@@ -214,7 +271,7 @@ jobs:
 
   merge:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'release' && github.repository == 'carpentries/workbench-docker')
+    if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
     needs:
       - publish
     steps:
