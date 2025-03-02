@@ -1,9 +1,9 @@
 # use tidyverse image to get devtools etc
 FROM rocker/rstudio:latest
 
-LABEL source="https://github.com/carpentries/workbench-docker/Dockerfile"
-
-MAINTAINER Robert Davey <robertdavey@carpentries.org>
+LABEL "org.carpentries.source"="https://github.com/carpentries/workbench-docker/Dockerfile"
+LABEL "org.carpentries.maintainer.name"="Robert Davey"
+LABEL "org.carpentries.maintainer.email"="robertdavey@carpentries.org"
 
 SHELL ["/bin/bash", "-c"]
 
