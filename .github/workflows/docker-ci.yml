@@ -274,7 +274,7 @@ jobs:
     needs:
         - build-arm64
         - publish-test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
         - name: Login to Docker Hub
           uses: docker/login-action@v3
