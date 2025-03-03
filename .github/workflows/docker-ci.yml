@@ -266,9 +266,8 @@ jobs:
         with:
           platforms: linux/amd64
           push: true
-          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",push-by-digest=true,name-canonical=true
           labels: ${{ steps.meta.outputs.labels }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64","${{ env.DOCKERHUB_REPO }}:latest-amd64"
           cache-from: type=gha,scope=amd64
 
   publish-arm64:
@@ -299,9 +298,8 @@ jobs:
           with:
             platforms: linux/arm64
             push: true
-            outputs: type=image,"name=${{ env.DOCKERHUB_REPO }}",push-by-digest=true,name-canonical=true
             labels: ${{ steps.meta.outputs.labels }}
-            tags: ${{ steps.meta.outputs.tags }}
+            tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64","${{ env.DOCKERHUB_REPO }}:latest-arm64"
             cache-from: type=gha,scope=arm64
 
   merge:
@@ -342,10 +340,14 @@ jobs:
             type=sha
 
       - name: Create manifest list and push
-        working-directory: ${{ runner.temp }}/digests
         run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.DOCKERHUB_REPO }}@sha256:%s ' *)
+          docker buildx imagetools create \
+            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
+            -t ${{ env.DOCKERHUB_REPO }}:latest \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64 \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64 \
+            ${{ env.DOCKERHUB_REPO }}:latest-amd64 \
+            ${{ env.DOCKERHUB_REPO }}:latest-arm64
 
       - name: Inspect image
         run: |
