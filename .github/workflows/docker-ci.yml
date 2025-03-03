@@ -34,10 +34,10 @@ jobs:
         with:
           platforms: linux/amd64
           outputs: |
-            type=image,"name=${{ env.DOCKERHUB_REPO }}-amd64",name-canonical=true
+            type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
             type=docker,dest=${{ runner.temp }}/workbench-amd64.tar
           push: false
-          tags: ${{ env.DOCKERHUB_REPO }}:amd64
+          tags: ${{ env.DOCKERHUB_REPO }}
           cache-to: ${{ (github.event_name == 'push' || github.event_name == 'release') && 'type=gha,mode=max,scope=amd64' || '' }}
           cache-from: type=gha,scope=amd64
 
@@ -87,10 +87,10 @@ jobs:
         with:
           platforms: linux/arm64
           outputs: |
-            type=image,"name=${{ env.DOCKERHUB_REPO }}-arm64",name-canonical=true
+            type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
             type=docker,dest=${{ runner.temp }}/workbench-arm64.tar
           push: false
-          tags: ${{ env.DOCKERHUB_REPO }}:arm64
+          tags: ${{ env.DOCKERHUB_REPO }}
           cache-to: type=gha,mode=max,scope=arm64
           cache-from: type=gha,scope=arm64
 
@@ -128,16 +128,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lesson: [carpentries/instructor-training, swcarpentry/shell-novice, datacarpentry/ecology-workshop, carpentries/sandpaper-docs]
+        lesson: [carpentries/instructor-training, swcarpentry/shell-novice]
         include:
           - lesson: carpentries/instructor-training
             lesson-name: Instructor Training
           - lesson: swcarpentry/shell-novice
             lesson-name: Shell Novice
-          - lesson: datacarpentry/ecology-workshop
-            lesson-name: Ecology Workshop
-          - lesson: carpentries/sandpaper-docs
-            lesson-name: Workbench Documentation
 
     name: ${{ matrix.lesson-name }}
     runs-on: ubuntu-latest
@@ -176,7 +172,7 @@ jobs:
           docker run --rm \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }}:amd64 \
+          ${{ env.DOCKERHUB_REPO }} \
           /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
 
   publish-test:
@@ -191,10 +187,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lesson: [datacarpentry/r-socialsci]
+        # lesson: [datacarpentry/ecology-workshop, carpentries/sandpaper-docs, datacarpentry/r-socialsci]
+        lesson: [datacarpentry/ecology-workshop, carpentries/sandpaper-docs]
         include:
-          - lesson: datacarpentry/r-socialsci
-            lesson-name: R for Social Scientists
+          - lesson: datacarpentry/ecology-workshop
+            lesson-name: Ecology Workshop
+          - lesson: carpentries/sandpaper-docs
+            lesson-name: Workbench Documentation
+        #   - lesson: datacarpentry/r-socialsci
+        #     lesson-name: R for Social Scientists
 
     name: ${{ matrix.lesson-name }}
     runs-on: ubuntu-latest
@@ -233,7 +234,7 @@ jobs:
           docker run --rm \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }}:amd64 \
+          ${{ env.DOCKERHUB_REPO }} \
           /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
 
   publish-amd64:
