@@ -342,13 +342,10 @@ jobs:
       - name: Create manifest list and push
         run: |
           docker buildx imagetools create \
-            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
             -t ${{ env.DOCKERHUB_REPO }}:latest \
-            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64 \
-            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64 \
             ${{ env.DOCKERHUB_REPO }}:latest-amd64 \
             ${{ env.DOCKERHUB_REPO }}:latest-arm64
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:latest
