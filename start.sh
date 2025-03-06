@@ -1,4 +1,6 @@
 #!/bin/bash
+export LESSON_NAME="$1"
+
 echo "Using env..."
 env
 
