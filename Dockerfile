@@ -4,7 +4,7 @@ FROM rocker/rstudio:latest
 LABEL "source"="https://github.com/carpentries/workbench-docker/Dockerfile"
 LABEL "maintainer.name"="Robert Davey"
 LABEL "maintainer.email"="robertdavey@carpentries.org"
-LABEL "version"="0.1.6"
+LABEL "version"="0.1.12"
 
 SHELL ["/bin/bash", "-c"]
 
