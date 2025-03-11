@@ -165,26 +165,117 @@ To use a folder on your local host system as the lesson content, please read bel
 
 Once a container is removed, you can start up a new fresh container from the same workbench docker image by following the first steps of this readme.
 
-### Mounting a lesson to use with a pre-built image
+## Building Workbench lessons
 
-If you already have a lesson on your local system that you want to use inside the container, you can mount your local lesson folder as a volume in the container.
+There are two ways to access lessons within the Workbench docker container:
+- by using a named volume (**recommended**)
+- by mounting the lesson directory directly into the container
 
-However, we have to use `docker run` again, but with a few more options.
+### Using named volumes
 
-We can use the `-v` flag to mount a local folder on your system into the container.
+Named volumes are like a virtual disk that you can use across different containers.
 
-In this case, we use `/home/your_user/lessons/shell-novice` as the example folder where your Carpentries lesson is stored:
+They're useful as they avoid permissions issues and other problems that can be present in some situations.
+
+Therefore, we recommend creating a `workbench-lesson` named volume to store copies of the lessons you want to use.
+
+#### Create a named volume using the provided script
+
+If you have cloned the workbench-docker repository, the `scripts/` folder contains the `setup_named_volume.sh` script.
+
+The script creates a new named volume called `workbench-lessons`.
+
+You can use this named volume to store multiple lessons as the whole lesson folder is copied inside it.
+
+Provide the script with the absolute or relative path to the lesson you want to store inside the named volume:
+
+```bash
+./scripts/setup_named_volume.sh /path/to/your/lesson
+```
+
+For a full example from scratch:
+
+```bash
+# make a `lessons` folder in your home directory and clone in a lesson
+mkdir ~/lessons
+cd ~/lessons
+git clone git@github.com:datacarpentry/R-ecology-lesson.git
+
+# make a `workbench` folder in your home directory and clone in the workbench-docker repo
+cd ~
+mkdir workbench
+cd ~/workbench
+git clone git@github.com:carpentries/workbench-docker.git
+
+# enter the `workbench-docker` folder, create the workbench-lessons named volume, and copy in the R-ecology-lesson content
+cd workbench-docker
+./scripts/setup_named_volume.sh ~/lessons/R-ecology-lesson
+```
+
+You will see output produced:
+
+```bash
+lessons/R-ecology-lesson
+Creating Docker volume: workbench-lessons
+workbench-lessons
+Starting temporary container...
+62ef5ff3067c75f1e0ba37580d9171147bcf99a8ea64f4e046a56eff5b6b4a33
+Copying files to Docker volume...
+Successfully copied 942MB to temp_copy_container:/home/rstudio/lessons/R-ecology-lesson
+Cleaning up...
+Data successfully copied to volume 'workbench-lessons'.
+total 4
+drwxr-xr-x   11 1000     1000          4096 Feb 21 15:44 R-ecology-lesson
+```
+
+Your new `workbench-lessons` named volume now contains the `R-ecology-lesson` lesson!
+
+A key benefit is that the lesson inside the named volume is still a git repository, so you can use git commands within the container to make changes and commit and push them like you would on your host operating system.
+
+#### Using the `workbench-lessons` named volume
+
+Within an R session running inside the container:
+
+```bash
+docker run --rm -it --name wb --user rstudio -e DISABLE_AUTH=true -v workbench-lessons:/home/rstudio/lessons carpentries/workbench-docker:latest R
+```
+
+Within an RStudio instance running inside the container, specifying a lesson name that is in your named volume as the final argument, e.g. `R-ecology-lesson`:
 
 ```bash
 docker run -it \
 --name workbench_rstudio \
 -p 8787:8787 \
--v /home/your_user/lessons/shell-novice:/home/rstudio/lesson \
---env-file .env \
+-v workbench-lessons:/home/rstudio/lessons \
+-e DISABLE_AUTH=true \
+carpentries/workbench-docker:latest \
+/home/rstudio/start.sh R-ecology-lesson
+```
+
+The start.sh script builds and installs any dependencies, including those specified within a `renv` inside the lesson.
+
+### Mounting a lesson to use with a pre-built image
+
+NOTE: Mounting a local lesson directory directly can raise permissions errors, especially on Mac. We recommend using the named volume system above.
+
+If you already have a lessons folder on your local system that you want to use inside the container, you can mount it directly as a volume in the container.
+
+However, we have to use `docker run` again, but with a few more options.
+
+We can use the `-v` flag to mount a local folder on your system into the container.
+
+In this case, we use `/home/your_user/lessons` as the example folder where your Carpentries lessons is stored, supplying the lesson you want to use as the final argument:
+
+```bash
+docker run -it \
+--name workbench_rstudio \
+-p 8787:8787 \
+-v /home/your_user/lessons:/home/rstudio/lessons \
+-e DISABLE_AUTH=true \
 -e USERID=$(id -u) \
 -e GROUPID=$(id -g) \
 carpentries/workbench-docker:latest \
-/home/rstudio/start.sh
+/home/rstudio/start.sh shell-novice
 ```
 
 You can now open `localhost:8787` in your browser and you will be able to use a full RStudio server instance from within the container.
@@ -194,21 +285,21 @@ Note that changes made to the lesson from within this session will **affect your
 The options that can be modified are as follows:
 * `name`: the name of the eventual workbench docker container
 * `p`: the port on which you can access the RStudio server on your host system - **only** change the port number on the left of the colon, e.g. to use `localhost:8888` instead, supply `-p 8888:8787` as the option
-* `v`: the local lesson folder to mount - **only** change the path on the left of the colon, e.g. to use `/home/foo/git-novice` as the lesson folder, supply `-v /home/foo/git-novice:/home/rstudio/lesson` as the option
+* `v`: the local lessons folder to mount - **only** change the path on the left of the colon, e.g. to use `/home/foo/lessons` as the lesson folder, supply `-v /home/foo/lessons:/home/rstudio/lessons` as the option
 
 Please leave all other options unchanged.
 
 If you don't want to use RStudio Server, you can start an R session directly:
 
 ```bash
-docker run --rm -it --name wb --user rstudio --env-file .env -v /home/your_user/lessons/shell-novice:/home/rstudio/lesson carpentries/workbench-docker:latest R
+docker run --rm -it --name wb --user rstudio --env-file .env -v /home/your_user/lessons:/home/rstudio/lessons carpentries/workbench-docker:latest R
 ```
 
 Then build or serve your lesson:
 
 ```r
 library(sandpaper)
-sandpaper::serve("/home/rstudio/lesson")
+sandpaper::serve("/home/rstudio/lessons/shell-novice")
 ```
 
 ## Building the images yourself
@@ -217,44 +308,48 @@ sandpaper::serve("/home/rstudio/lesson")
 
 Clone this repository into somewhere suitable, e.g. a `workbench` folder in your home directory:
 
-```
+```bash
 cd ~
 mkdir workbench
 cd workbench
 git clone git@github.com:carpentries/workbench-docker.git
 ```
 
-### To build lessons locally
+### Create a named volume
+
+We recommend creating a named volume as per the [instructions above](#using-named-volumes).
+
+### Build lessons locally
 
 Clone a remote git lesson into somewhere suitable, e.g. a `lessons` folder in your home directory:
 
-```
+```bash
 cd ~
 mkdir lessons
 cd lessons
 git clone git@github.com:swcarpentry/shell-novice.git
 ```
 
-Go into the workbench-docker folder, and run the image with the LESSON_PATH env variable:
+Go into the workbench-docker folder, and run the image with the LESSON_NAME env variable specifying the name of the lesson inside the named volume:
 
-```
+```bash
 cd ~/workbench/workbench-docker
-LESSON_PATH=/home/your_user/lessons/shell-novice docker compose up workbench-local
+LESSON_NAME=shell-novice docker compose up workbench-local
 ```
 
-This will build the container, and install any required packages including renv.lock dependencies.
+This will build the container, and install any required packages including any `renv` dependencies for Rmarkdown lessons.
 
 It will also start a RStudio server inside the container that is accessible on your host system by opening a browser and going to:
 
 `localhost:8787`
 
-Your lesson will be available under the `/home/rstudio/lesson` folder inside the container.
+Your lesson will be available under the `/home/rstudio/lessons/<lesson-name>` folder inside the container, e.g. `/home/rstudio/lessons/shell-novice`
 
 ## Rebuilding the image
 
 If the container is already running, go to the `workbench-docker` folder and run `docker compose down`.
 
-Then run `docker compose --build -d` to rebuild the image.
+Then run `docker compose up --build -d` to rebuild the image.
 
 ## Removing previous containers
 

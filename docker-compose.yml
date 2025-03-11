@@ -15,9 +15,10 @@ services:
   workbench-local:
     image: carpentries/workbench-docker:${TAG:-latest}
     volumes:
-      - ${LESSON_PATH:-./lessons}:/home/rstudio/lesson
+      - workbench-lessons:/home/rstudio/lessons
     environment:
       WORKBENCH_PROFILE: "local"
+      LESSON_NAME: "${LESSON_NAME}"
     env_file:
       - .env
     ports:
@@ -34,3 +35,5 @@ services:
 volumes:
   workbench-config:
     driver: local
+  workbench-lessons:
+    external: true

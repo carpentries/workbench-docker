@@ -173,7 +173,7 @@ jobs:
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }} \
-          /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
+          /bin/bash -c "/home/rstudio/.workbench/ci-lesson_pre_prep.sh"
 
   publish-test:
     if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
@@ -235,7 +235,7 @@ jobs:
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }} \
-          /bin/bash -c "/home/rstudio/.workbench/lesson_pre_prep.sh"
+          /bin/bash -c "/home/rstudio/.workbench/ci-lesson_pre_prep.sh"
 
   publish-amd64:
     if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
@@ -345,6 +345,11 @@ jobs:
             -t ${{ env.DOCKERHUB_REPO }}:latest \
             ${{ env.DOCKERHUB_REPO }}:latest-amd64 \
             ${{ env.DOCKERHUB_REPO }}:latest-arm64
+
+          docker buildx imagetools create \
+            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64 \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64
 
       - name: Inspect image
         run: |

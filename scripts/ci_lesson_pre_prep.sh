@@ -9,4 +9,4 @@ ls -lAh /home/rstudio/lesson
 cd /home/rstudio/lesson
 
 # run setup
-Rscript /home/rstudio/.workbench/run_tests.R
+Rscript /home/rstudio/.workbench/ci_run_tests.R
