@@ -28,6 +28,10 @@ docker run -d --name "$TEMP_CONTAINER" -v "$VOLUME_NAME:$TARGET_DIR" alpine slee
 echo "Copying files to Docker volume..."
 docker cp "$LESSON_PATH/." "$TEMP_CONTAINER:$TARGET_DIR/$LESSON_NAME"
 
+# Change ownership inside the container
+echo "Fixing file permissions..."
+docker exec "$TEMP_CONTAINER" chown -R 1000:1000 "$TARGET_DIR/$LESSON_NAME"
+
 # Stop and remove the temporary container
 echo "Cleaning up..."
 docker stop "$TEMP_CONTAINER" > /dev/null
