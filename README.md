@@ -179,18 +179,25 @@ They're useful as they avoid permissions issues and other problems that can be p
 
 Therefore, we recommend creating a `workbench-lesson` named volume to store copies of the lessons you want to use.
 
-#### Create a named volume using the provided script
+#### Downloading the named volume creation script
 
 If you have cloned the workbench-docker repository, the `scripts/` folder contains the `setup_named_volume.sh` script.
 
-The script creates a new named volume called `workbench-lessons`.
+If you want to download the script only, instead of cloning the whole repo, use `wget` or `curl` to download the script into a suitable location, e.g.:
+
+`wget https://raw.githubusercontent.com/carpentries/workbench-docker/refs/heads/main/scripts/setup_named_volume.sh`
+
+#### Create a named volume using the provided script
+
+The `setup_named_volume.sh` script creates a new named volume called `workbench-lessons`.
 
 You can use this named volume to store multiple lessons as the whole lesson folder is copied inside it.
 
 Provide the script with the absolute or relative path to the lesson you want to store inside the named volume:
 
 ```bash
-./scripts/setup_named_volume.sh /path/to/your/lesson
+cd scripts/
+./setup_named_volume.sh /path/to/your/lesson
 ```
 
 For a full example from scratch:
@@ -232,24 +239,35 @@ Your new `workbench-lessons` named volume now contains the `R-ecology-lesson` le
 
 A key benefit is that the lesson inside the named volume is still a git repository, so you can use git commands within the container to make changes and commit and push them like you would on your host operating system.
 
+#### Adding other lessons to the named volume
+
+The named volume can store any number of lessons you wish to manage.
+
+To add another lesson to the existing `workbench-lessons` named volume, rerun the `setup_named_volume.sh` script:
+
+```bash
+./setup_named_volume.sh ~/lessons/shell-novice
+```
+
 #### Using the `workbench-lessons` named volume
 
 Within an R session running inside the container:
 
 ```bash
-docker run --rm -it --name wb --user rstudio -e DISABLE_AUTH=true -v workbench-lessons:/home/rstudio/lessons carpentries/workbench-docker:latest R
+docker run --rm -it --name wb --user rstudio -v workbench-lessons:/home/rstudio/lessons carpentries/workbench-docker:latest R
 ```
 
-Within an RStudio instance running inside the container, specifying a lesson name that is in your named volume as the final argument, e.g. `R-ecology-lesson`:
+Within an RStudio instance running inside the container, specifying a lesson name that is in your named volume as the final argument, e.g. `R-ecology-lesson` or `shell-novice`:
 
 ```bash
 docker run -it \
 --name workbench_rstudio \
+--user rstudio \
 -p 8787:8787 \
 -v workbench-lessons:/home/rstudio/lessons \
 -e DISABLE_AUTH=true \
 carpentries/workbench-docker:latest \
-/home/rstudio/start.sh R-ecology-lesson
+/home/rstudio/start.sh shell-novice
 ```
 
 The start.sh script builds and installs any dependencies, including those specified within a `renv` inside the lesson.
@@ -269,6 +287,7 @@ In this case, we use `/home/your_user/lessons` as the example folder where your 
 ```bash
 docker run -it \
 --name workbench_rstudio \
+--user rstudio \
 -p 8787:8787 \
 -v /home/your_user/lessons:/home/rstudio/lessons \
 -e DISABLE_AUTH=true \
