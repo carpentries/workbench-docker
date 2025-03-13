@@ -430,3 +430,31 @@ Please check the relevant [Docker Desktop documentation](https://docs.docker.com
 ## Adding extra dependencies
 
 If you have any issues with this image, please email us on `infrastructure at carpentries.org` or head to the `#workbench` channel in our [Slack server](https://slack-invite.carpentries.org/).
+
+## Using Git within the container
+
+The simplest route is to use the `scripts/run_workbench.sh` script as this automatically adds the following options.
+
+To use Git commands within the container, add two bind volumes to your docker command:
+
+```bash
+-v ~/.ssh:/home/rstudio/.ssh:ro
+-v ~/.gitconfig:/home/rstudio/.gitconfig
+```
+
+This will mount your SSH key folder as a read only volume, and your global user gitconfig, inside the container.
+
+A full example:
+
+```bash
+docker run -it \
+--name workbench_rstudio \
+--user rstudio \
+-p 8787:8787 \
+-v workbench-lessons:/home/rstudio/lessons \
+-v ~/.ssh:/home/rstudio/.ssh:ro \
+-v ~/.gitconfig:/home/rstudio/.gitconfig \
+-e DISABLE_AUTH=true \
+carpentries/workbench-docker:latest \
+/home/rstudio/start.sh shell-novice
+```
