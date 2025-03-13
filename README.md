@@ -67,7 +67,7 @@ carpentries/workbench-docker   latest    b816439d0469   6 days ago   2.89GB
 You can then run a container from the image, specifying a name for the container:
 
 ```bash
-docker run --name wb carpentries/workbench-docker:latest
+docker run --name carpentries-workbench carpentries/workbench-docker:latest
 ```
 
 You will see some output:
@@ -103,13 +103,13 @@ Hit Ctrl-C (Command-C) to stop the running container.
 Remove the previous container using the name you provided before:
 
 ```bash
-docker rm wb
+docker rm carpentries-workbench
 ```
 
 Let's start the container in `detached` mode by adding the `-d` flag:
 
 ```bash
-docker run --name wb -d carpentries/workbench-docker:latest
+docker run --name carpentries-workbench -d carpentries/workbench-docker:latest
 ```
 
 The command will return a hash of the running container. 
@@ -124,7 +124,7 @@ You should see output like:
 
 ```bash
 CONTAINER ID   IMAGE                                 COMMAND   CREATED          STATUS          PORTS      NAMES
-63f1fd51f925   carpentries/workbench-docker:latest   "/init"   21 seconds ago   Up 20 seconds   8787/tcp   wb
+63f1fd51f925   carpentries/workbench-docker:latest   "/init"   21 seconds ago   Up 20 seconds   8787/tcp   carpentries-workbench
 ```
 
 To get just the ID and NAME for readability, use:
@@ -136,13 +136,13 @@ docker container list --all --format '{{.ID}} {{.Names}}'
 Which will output:
 
 ```bash
-63f1fd51f925 wb
+63f1fd51f925 carpentries-workbench
 ```
 
 Using the name in the NAMES column, in this case `wb`, execute a bash shell inside the container. The name of the container on your system may be different:
 
 ```bash
-docker exec --user rstudio -it wb bash
+docker exec --user rstudio -it carpentries-workbench bash
 rstudio@63f1fd51f925:~$
 ```
 
@@ -169,7 +169,7 @@ To exit from the container, type `exit` at the bash prompt.
 When you exit, your container is still running, and can be reused by re-running the docker exec command:
 
 ```bash
-docker exec --user rstudio -it wb bash
+docker exec --user rstudio -it carpentries-workbench bash
 ```
 
 ### Removing a container
@@ -177,13 +177,13 @@ docker exec --user rstudio -it wb bash
 To remove a running container, first stop it:
 
 ```bash
-docker stop wb
+docker stop carpentries-workbench
 ```
 
 And then remove it:
 
 ```bash
-docker rm wb
+docker rm carpentries-workbench
 ```
 
 NOTE: any lesson content you develop will be stored within the container, and will be deleted if you delete the container.
@@ -281,14 +281,14 @@ To add another lesson to the existing `workbench-lessons` named volume, rerun th
 Within an R session running inside the container:
 
 ```bash
-docker run --rm -it --name wb --user rstudio -v workbench-lessons:/home/rstudio/lessons carpentries/workbench-docker:latest R
+docker run --rm -it --name carpentries-workbench --user rstudio -v workbench-lessons:/home/rstudio/lessons carpentries/workbench-docker:latest R
 ```
 
 Within an RStudio instance running inside the container, specifying a lesson name that is in your named volume as the final argument, e.g. `R-ecology-lesson` or `shell-novice`:
 
 ```bash
 docker run -it \
---name workbench_rstudio \
+--name carpentries-workbench \
 --user rstudio \
 -p 8787:8787 \
 -v workbench-lessons:/home/rstudio/lessons \
@@ -313,7 +313,7 @@ In this case, we use `/home/your_user/lessons` as the example folder where your 
 
 ```bash
 docker run -it \
---name workbench_rstudio \
+--name carpentries-workbench \
 --user rstudio \
 -p 8787:8787 \
 -v /home/your_user/lessons:/home/rstudio/lessons \
@@ -338,7 +338,7 @@ Please leave all other options unchanged.
 If you don't want to use RStudio Server, you can start an R session directly:
 
 ```bash
-docker run --rm -it --name wb --user rstudio --env-file .env -v /home/your_user/lessons:/home/rstudio/lessons carpentries/workbench-docker:latest R
+docker run --rm -it --name carpentries-workbench --user rstudio --env-file .env -v /home/your_user/lessons:/home/rstudio/lessons carpentries/workbench-docker:latest R
 ```
 
 Then build or serve your lesson:
@@ -448,7 +448,7 @@ A full example:
 
 ```bash
 docker run -it \
---name workbench_rstudio \
+--name carpentries-workbench \
 --user rstudio \
 -p 8787:8787 \
 -v workbench-lessons:/home/rstudio/lessons \
