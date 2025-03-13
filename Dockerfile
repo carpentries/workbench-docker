@@ -32,6 +32,7 @@ RUN apt-get install -y \
     libtiff-dev \
     pandoc \
     curl \
+    ssh \
     nano \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

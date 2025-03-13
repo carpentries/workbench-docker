@@ -323,9 +323,13 @@ sandpaper::serve("/home/rstudio/lessons/shell-novice")
 
 ## Building the images yourself
 
+If an existing workbench container is already running, go to the `workbench-docker` folder and run `docker compose down`.
+
+You may also need to delete other containers and images with Docker Desktop or `docker ps`, `docker stop` and `docker rm`.
+
 ### Clone this repository
 
-Clone this repository into somewhere suitable, e.g. a `workbench` folder in your home directory:
+If you haven't already clone this repository into somewhere suitable, e.g. a `workbench` folder in your home directory:
 
 ```bash
 cd ~
@@ -337,6 +341,15 @@ git clone git@github.com:carpentries/workbench-docker.git
 ### Create a named volume
 
 We recommend creating a named volume as per the [instructions above](#using-named-volumes).
+
+### Rebuild the base workbench container
+
+To rebuild the base workbench image that you can use for running R or RStudio:
+
+```bash
+cd ~/workbench/workbench-docker
+docker compose up --build -d workbench
+```
 
 ### Build lessons locally
 
@@ -353,6 +366,7 @@ Go into the workbench-docker folder, and run the image with the LESSON_NAME env 
 
 ```bash
 cd ~/workbench/workbench-docker
+docker compose down
 LESSON_NAME=shell-novice docker compose up workbench-local
 ```
 
@@ -366,9 +380,13 @@ Your lesson will be available under the `/home/rstudio/lessons/<lesson-name>` fo
 
 ## Rebuilding the image
 
-If the container is already running, go to the `workbench-docker` folder and run `docker compose down`.
+To rebuild the image:
 
-Then run `docker compose up --build -d` to rebuild the image.
+```bash
+cd ~/workbench/workbench-docker
+docker compose down
+docker compose up --build -d workbench
+```
 
 ## Removing previous containers
 
