@@ -17,6 +17,33 @@ We currently provide two pre-built images:
 2. Open a terminal (bash, zsh, powershell, etc)
 3. Then:
 
+## Quick Start
+
+```bash
+# go home
+cd ~
+
+# get the latest workbench docker image
+docker pull carpentries/workbench-docker:latest
+
+# make a `lessons` folder in your home directory and clone in a lesson
+mkdir ~/lessons
+cd ~/lessons
+git clone git@github.com:swcarpentry/shell-novice.git
+
+# make a `workbench` folder in your home directory and clone in the workbench-docker repo
+mkdir ~/workbench
+cd ~/workbench
+git clone git@github.com:carpentries/workbench-docker.git
+
+# enter the `workbench-docker` folder, create the workbench-lessons named volume, and copy in the shell-novice content
+cd workbench-docker
+./scripts/setup_named_volume.sh ~/lessons/shell-novice
+
+# start the workbench container
+./scripts/run_workbench.sh shell-novice
+```
+
 ## Using the Workbench Image
 
 ### Pulling the latest pre-built image
