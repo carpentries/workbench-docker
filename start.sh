@@ -1,5 +1,6 @@
 #!/bin/bash
 export LESSON_NAME="$1"
+export GPG_TTY=$(tty)
 
 echo "Adding git safe directory..."
 

@@ -1,11 +1,10 @@
 #!/bin/bash
+export GPG_TTY=$(tty)
 
 echo "Setting up the workbench for $LESSON_NAME ..."
 
 if [ "$WORKBENCH_PROFILE" == "local" ]; then
     echo "Running local renv restore ..."
-
-    export RENV_PATHS_ROOT="/home/rstudio/lessons/$LESSON_NAME/renv"
 
     # Restore renv before running
     cd "/home/rstudio/lessons/$LESSON_NAME"

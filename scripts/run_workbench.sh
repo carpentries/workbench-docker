@@ -19,4 +19,4 @@ docker stop carpentries-workbench
 docker rm carpentries-workbench
 
 # start the workbench_rstudio container
-docker run -it --name carpentries-workbench --user rstudio -p 8787:8787 -v ~/.ssh:/home/rstudio/.ssh:ro -v ~/.gitconfig:/home/rstudio/.gitconfig -v workbench-lessons:/home/rstudio/lessons -e DISABLE_AUTH=true carpentries/workbench-docker:latest /home/rstudio/start.sh $LESSON_NAME
+docker run -it --name carpentries-workbench --user rstudio -p 8787:8787 -v ~/.ssh:/home/rstudio/.ssh:ro -v ~/.gnupg:/home/rstudio/.gnupg -v ~/.gitconfig:/home/rstudio/.gitconfig -v workbench-lessons:/home/rstudio/lessons -e DISABLE_AUTH=true carpentries/workbench-docker:latest /home/rstudio/start.sh $LESSON_NAME

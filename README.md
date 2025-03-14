@@ -198,7 +198,7 @@ There are two ways to access lessons within the Workbench docker container:
 - by using a named volume (**recommended**)
 - by mounting the lesson directory directly into the container
 
-### Using named volumes
+### Named volumes
 
 Named volumes are like a virtual disk that you can use across different containers.
 
@@ -429,11 +429,50 @@ Please check the relevant [Docker Desktop documentation](https://docs.docker.com
 
 ## Adding extra dependencies
 
-If you have any issues with this image, please email us on `infrastructure at carpentries.org` or head to the `#workbench` channel in our [Slack server](https://slack-invite.carpentries.org/).
+### System dependencies
+
+As the docker container is a virtualised Ubuntu linux environment, you can use `apt-get` to install any other dependencies from within a terminal in the container.
+
+```bash
+sudo apt-get update
+sudo apt-get install <x>
+```
+
+### R dependencies
+
+Install any packages you require in an R session running inside the container as usual:
+
+```r
+install.packages("foo")
+```
+
+#### renv caching
+
+If you want to set up an renv cache for use with your lesson, follow the [sandpaper documentation](https://carpentries.r-universe.dev/sandpaper/doc/manual.html#dependency_management) to initialise and store renv lockfiles:
+
+Step by step:
+
+```r
+library(sandpaper)
+sandpaper::use_package_cache()
+
+# select option 1 in the interactive prompts to use a local cache
+```
+
+With an existing lesson using `manage_deps()`:
+
+```r
+library(sandpaper)
+setwd("~/lessons/your_lesson")
+
+sandpaper::manage_deps()
+```
 
 ## Using Git within the container
 
-The simplest route is to use the `scripts/run_workbench.sh` script as this automatically adds the following options.
+To use Git successfully within the Workbench container, the simplest route is to use the `scripts/run_workbench.sh` script as this automatically adds the following SSH and GPG options.
+
+### SSH Keys
 
 To use Git commands within the container, add two bind volumes to your docker command:
 
@@ -458,3 +497,31 @@ docker run -it \
 carpentries/workbench-docker:latest \
 /home/rstudio/start.sh shell-novice
 ```
+
+### GPG Signing
+
+If you have GPG signed keys set up to verify your activity on GitHub, mount your `~/.gnupg` as a bind volume with the following option:
+
+```bash
+-v ~/.gnupg:/home/rstudio/.gnupg
+```
+
+A full example:
+
+```bash
+docker run -it \
+--name carpentries-workbench \
+--user rstudio \
+-p 8787:8787 \
+-v workbench-lessons:/home/rstudio/lessons \
+-v ~/.ssh:/home/rstudio/.ssh:ro \
+-v ~/.gitconfig:/home/rstudio/.gitconfig \
+-v ~/.gnupg:/home/rstudio/.gnupg \
+-e DISABLE_AUTH=true \
+carpentries/workbench-docker:latest \
+/home/rstudio/start.sh shell-novice
+```
+
+## Getting help
+
+If you have any issues with this image, please email us on `infrastructure at carpentries.org` or head to the `#workbench` channel in our [Slack server](https://slack-invite.carpentries.org/).
