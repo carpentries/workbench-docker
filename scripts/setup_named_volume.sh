@@ -5,7 +5,7 @@ LESSON_PATH=$1
 # Define variables
 LESSON_NAME=$(basename "$LESSON_PATH")
 VOLUME_NAME="workbench-lessons"
-TARGET_DIR="/home/rstudio/lessons"
+TARGET_DIR="//home/rstudio/lessons"
 TEMP_CONTAINER="temp_copy_container"
 
 # Ensure the source directory exists
