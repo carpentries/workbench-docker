@@ -7,6 +7,17 @@ on:
       - release-*
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Who triggered this build?'
+        required: true
+        default: 'Maintainer (via GitHub)'
+      run-tests:
+        description: 'Run Tests'
+        required: false
+        default: false
+        type: boolean      
 
 env:
   DOCKERHUB_REPO: carpentries/workbench-docker
@@ -118,7 +129,17 @@ jobs:
           retention-days: 1
 
   push-test:
-    if: github.event_name == 'release' || (startsWith(github.ref_name, 'release-') && github.event_name == 'push') && github.repository == 'carpentries/workbench-docker'
+    if: |
+      github.repository == 'carpentries/workbench-docker' &&
+      (
+        github.event_name == 'release' ||
+        (
+          startsWith(github.ref_name, 'release-') && github.event_name == 'push'
+        ) ||
+        (
+          github.event_name == 'workflow_dispatch' && ${{ github.event.inputs.run-tests }}
+        )
+      )
     needs:
       - build-amd64
     permissions:
