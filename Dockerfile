@@ -29,6 +29,7 @@ RUN apt-get install -y \
     libxslt1-dev \
     libssl-dev \
     libtiff-dev \
+    pngquant \
     pandoc \
     curl \
     ssh \
