@@ -1,4 +1,5 @@
 #!/bin/bash
+export GPG_TTY=$(tty)
 
 # Mark Repository as Safe
 git config --global --add safe.directory /home/rstudio/lesson

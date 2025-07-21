@@ -1,5 +1,11 @@
 cat("::group::Register Repositories\n")
 on_linux <- Sys.info()[["sysname"]] == "Linux"
+
+is_root_euid <- function() {
+  result <- system("id -u", intern = TRUE)
+  return(as.numeric(result) == 0)
+}
+
 if (on_linux) {
     if (Sys.getenv("RSPM") == "") {
         release <- system("lsb_release -c | awk '{print $2}'", intern = TRUE)
@@ -59,7 +65,14 @@ if (on_linux && has_lock) {
     writeLines(readLines("DESCRIPTION"))
 
     # hack to get around sudo being hardcoded into vise apt-get update
-    if (on_linux) system("apt-get update")
+    if (on_linux) {
+        if (is_root_euid()) {
+            system("apt-get update")
+        }
+        else {
+            system("sudo apt-get update")
+        }
+    }
 
     vise::ci_sysreqs(renv::paths$lockfile(), execute = TRUE, sudo = FALSE)
 }
