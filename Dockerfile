@@ -30,6 +30,7 @@ RUN apt-get install -y \
     libssl-dev \
     libtiff-dev \
     xdg-utils \
+    pngquant \
     pandoc \
     curl \
     ssh \
