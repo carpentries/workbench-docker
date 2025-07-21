@@ -1,4 +1,20 @@
 library(remotes)
+library(httr)
+
+install_latest_release <- function(pkg) {
+  api_url <- paste0("https://api.github.com/repos/carpentries/", pkg, "/releases/latest")
+  resp <- httr::GET(api_url)
+
+  if (status_code(resp) == 200) {
+    tag <- content(resp, as = "parsed", type = "application/json")$tag_name
+    message("Installing ", pkg, " from GitHub @", tag)
+    renv::install(paste0("carpentries/", pkg, "@", tag))
+  } else {
+    message("Failed to get GitHub release tag for ", pkg)
+    message("Falling back to install.packages()")
+    install.packages(pkg)
+  }
+}
 
 # Set the default HTTP user agent to get pre-built binary packages
 RV <- getRversion()
@@ -37,5 +53,6 @@ pkgs      <- rbind(sand_deps, varn_deps, sess_deps, with_deps)
 print(pkgs)
 update(pkgs, upgrade = "always")
 
-# Install the template packages to your R library
-install.packages(c("sandpaper", "varnish", "pegboard"))
+install_latest_release("sandpaper")
+install_latest_release("varnish")
+install_latest_release("pegboard")
