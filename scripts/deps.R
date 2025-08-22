@@ -45,6 +45,75 @@ cat("Repositories Used")
 print(getOption("repos"))
 cat("::endgroup::\n")
 
+# install common dependencies for lessons that use Rmarkdown
+common_deps <- c(
+    "base64enc",
+    "bit",
+    "bit64",
+    "bslib",
+    "cachem",
+    "cli",
+    "cpp11",
+    "crayon",
+    "curl",
+    "devtools",
+    "digest",
+    "dplyr",
+    "evaluate",
+    "fastmap",
+    "fontawesome",
+    "fs",
+    "ggplot2",
+    "glue",
+    "highr",
+    "htmltools",
+    "inline",
+    "jquerylib",
+    "jsonlite",
+    "knitr",
+    "lifecycle",
+    "lubridate",
+    "magrittr",
+    "memoise",
+    "mime",
+    "pillar",
+    "pkgconfig",
+    "purrr",
+    "R6",
+    "ragg",
+    "rappdirs",
+    "readr",
+    "reprex",
+    "rlang",
+    "rmarkdown",
+    "sass",
+    "selectr",
+    "stringi",
+    "stringr",
+    "svglite",
+    "sys",
+    "systemfonts",
+    "textshaping",
+    "tibble",
+    "tidyr",
+    "tidyverse",
+    "tinytex",
+    "tzdb",
+    "uuid",
+    "vctrs",
+    "vroom",
+    "whisker",
+    "withr",
+    "xfun",
+    "xml2",
+    "yaml"
+)
+
+# Install common deps
+for (pkg in common_deps) {
+    install.packages(pkg)
+}
+
 sand_deps <- remotes::package_deps("sandpaper")
 varn_deps <- remotes::package_deps("varnish")
 sess_deps <- remotes::package_deps("sessioninfo")
@@ -53,6 +122,9 @@ pkgs      <- rbind(sand_deps, varn_deps, sess_deps, with_deps)
 print(pkgs)
 update(pkgs, upgrade = "always")
 
-install_latest_release("sandpaper")
+# install_latest_release("sandpaper")
 install_latest_release("varnish")
 install_latest_release("pegboard")
+
+# install sandpaper from site libs PR branch
+remotes::install_github("froggleston/sandpaper", ref = "frog-site-libs-1")
