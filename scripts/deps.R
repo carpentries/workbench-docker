@@ -126,5 +126,5 @@ update(pkgs, upgrade = "always")
 install_latest_release("varnish")
 install_latest_release("pegboard")
 
-# install sandpaper from site libs PR branch
-remotes::install_github("froggleston/sandpaper", ref = "frog-site-libs-1")
+# install sandpaper from main (0.17.2.9000) until next release (0.17.2)
+remotes::install_github("carpentries/sandpaper", ref = "main")
