@@ -391,11 +391,12 @@ jobs:
       - name: Create version manifest and push
         run: |
           docker buildx imagetools create \
-            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}
 
   merge-all:
     runs-on: ubuntu-latest
