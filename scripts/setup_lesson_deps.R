@@ -65,14 +65,16 @@ if (on_linux && has_lock) {
     writeLines(readLines("DESCRIPTION"))
 
     # hack to get around sudo being hardcoded into vise apt-get update
+    sudo <- FALSE
     if (on_linux) {
         if (is_root_euid()) {
             system("apt-get update")
         }
         else {
             system("sudo apt-get update")
+            sudo <- TRUE
         }
     }
 
-    vise::ci_sysreqs(renv::paths$lockfile(), execute = TRUE, sudo = FALSE)
+    vise::ci_sysreqs(renv::paths$lockfile(), execute = TRUE, sudo = sudo)
 }

@@ -41,7 +41,7 @@ RUN apt-get install -y \
 RUN echo "rstudio ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
 
 # setup base renv for lessons that want to use it
-RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr"), repos = c(CRAN = "https://cloud.r-project.org"))'
+RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "gh"), repos = c(CRAN = "https://cloud.r-project.org"))'
 
 ARG SANDPAPER_VER
 ARG VARNISH_VER
@@ -53,6 +53,9 @@ ENV VARNISH_VER=${VARNISH_VER}
 ENV PEGBOARD_VER=${PEGBOARD_VER}
 
 WORKDIR /home/rstudio
+
+COPY .Renviron /home/rstudio/.Renviron
+RUN chown -R rstudio:rstudio /home/rstudio/.Renviron
 
 COPY scripts/* /home/rstudio/.workbench/
 RUN chmod +x /home/rstudio/.workbench/*

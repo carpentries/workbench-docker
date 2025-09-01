@@ -43,11 +43,11 @@ if (file.exists(file.path(wd, 'renv'))) {
     }
     req("renv")
     Sys.setenv("RENV_PROFILE" = "lesson-requirements")
-    tryCatch(sandpaper::manage_deps(path = wd, quiet = FALSE),
+    tryCatch(sandpaper::manage_deps(path = wd, quiet = FALSE, use_site_libs = TRUE),
         error = function(e) {
             iss <- "https://github.com/rstudio/renv/issues/1184"
             cli::cli_alert_danger("run failed... attempting to re-run (see {.url {iss}} for details.")
-            sandpaper::manage_deps(path = wd, quiet = FALSE)
+            sandpaper::manage_deps(path = wd, quiet = FALSE, use_site_libs = TRUE)
         }
     )
     cat("::endgroup::\n")
