@@ -29,6 +29,7 @@ RUN apt-get install -y \
     libxslt1-dev \
     libssl-dev \
     libtiff-dev \
+    libx11-dev \
     xdg-utils \
     pngquant \
     pandoc \
@@ -41,7 +42,7 @@ RUN apt-get install -y \
 RUN echo "rstudio ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
 
 # setup base renv for lessons that want to use it
-RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "gh"), repos = c(CRAN = "https://cloud.r-project.org"))'
+RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "gh", "yaml"), repos = c(CRAN = "https://cloud.r-project.org"))'
 
 ARG SANDPAPER_VER
 ARG VARNISH_VER

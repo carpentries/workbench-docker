@@ -13,11 +13,16 @@ on:
         description: 'Who triggered this build?'
         required: true
         default: 'Maintainer (via GitHub)'
+      no-latest:
+        description: 'Only push version tag, not the "latest" tag?'
+        required: false
+        default: false
+        type: boolean
       run-tests:
         description: 'Run Tests'
         required: false
         default: false
-        type: boolean      
+        type: boolean
 
 env:
   DOCKERHUB_REPO: carpentries/workbench-docker
@@ -49,7 +54,7 @@ jobs:
             type=docker,dest=${{ runner.temp }}/workbench-amd64.tar
           push: false
           tags: ${{ env.DOCKERHUB_REPO }}
-          cache-to: ${{ ((github.ref_name == 'main' && github.event_name == 'push') || github.event_name == 'release') && 'type=gha,mode=max,scope=amd64' || '' }}
+          cache-to: ${{ ((github.ref_name == 'main' && github.event_name == 'push') || github.event_name == 'release' || github.event_name == 'workflow_dispatch') && 'type=gha,mode=max,scope=amd64' || '' }}
           cache-from: type=gha,scope=amd64
 
       - name: Export digest
@@ -76,7 +81,17 @@ jobs:
           retention-days: 1
 
   build-arm64:
-    if: (github.event_name == 'release' || (startsWith(github.ref_name, 'release-') && github.event_name == 'push')) && github.repository == 'carpentries/workbench-docker'
+    if: |
+      (
+        github.event_name == 'release' ||
+        (
+          github.event_name == 'push' &&
+          (
+            startsWith(github.ref_name, 'release-')
+          )
+        ) &&
+        github.repository == 'carpentries/workbench-docker'
+      )
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout repo
@@ -134,10 +149,17 @@ jobs:
       (
         github.event_name == 'release' ||
         (
-          startsWith(github.ref_name, 'release-') && github.event_name == 'push'
+          github.event_name == 'push' &&
+          (
+            startsWith(github.ref_name, 'release-')
+          )
         ) ||
         (
-          github.event_name == 'workflow_dispatch' && ${{ github.event.inputs.run-tests }}
+          github.event_name == 'workflow_dispatch' &&
+          (
+            startsWith(github.ref_name, 'dev-') ||
+            github.event.inputs.run-tests
+          )
         )
       )
     needs:
@@ -259,11 +281,10 @@ jobs:
           /bin/bash -c "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   publish-amd64:
-    if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
+    if: github.repository == 'carpentries/workbench-docker'
     needs:
       - build-amd64
       - push-test
-      - publish-test
     runs-on: ubuntu-latest
     steps:
       - name: Login to Docker Hub
@@ -282,7 +303,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Push version AMD64 image only
+        if: ${{ github.event.inputs.no-latest }}
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64
+          push: true
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64"
+          cache-from: type=gha,scope=amd64
+
       - name: Push AMD64 image
+        if: ${{ github.event_name == 'release' && !github.event.inputs.no-latest }}
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
@@ -292,7 +324,7 @@ jobs:
           cache-from: type=gha,scope=amd64
 
   publish-arm64:
-    if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
+    if: github.event_name == 'release' && !github.event.inputs.no-latest && github.repository == 'carpentries/workbench-docker'
     needs:
         - build-arm64
         - publish-test
@@ -323,9 +355,54 @@ jobs:
             tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64","${{ env.DOCKERHUB_REPO }}:latest-arm64"
             cache-from: type=gha,scope=arm64
 
-  merge:
+  merge-version-only:
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
+    if: github.event.inputs.no-latest && github.repository == 'carpentries/workbench-docker'
+    needs:
+      - publish-amd64
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKERHUB_REPO }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Create version manifest and push
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}
+
+  merge-all:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && !github.event.inputs.no-latest && github.repository == 'carpentries/workbench-docker'
     needs:
       - publish-amd64
       - publish-arm64
@@ -360,17 +437,17 @@ jobs:
             type=semver,pattern=latest,enable={{is_default_branch}}
             type=sha
 
-      - name: Create manifest list and push
+      - name: Create version manifest and push
         run: |
-          docker buildx imagetools create \
-            -t ${{ env.DOCKERHUB_REPO }}:latest \
-            ${{ env.DOCKERHUB_REPO }}:latest-amd64 \
-            ${{ env.DOCKERHUB_REPO }}:latest-arm64
-
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }} \
             ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-amd64 \
             ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-arm64
+
+          docker buildx imagetools create \
+            -t ${{ env.DOCKERHUB_REPO }}:latest \
+            ${{ env.DOCKERHUB_REPO }}:latest-amd64 \
+            ${{ env.DOCKERHUB_REPO }}:latest-arm64
 
       - name: Inspect image
         run: |
