@@ -54,7 +54,7 @@ jobs:
             type=docker,dest=${{ runner.temp }}/workbench-amd64.tar
           push: false
           tags: ${{ env.DOCKERHUB_REPO }}
-          cache-to: ${{ ((github.ref_name == 'main' && github.event_name == 'push') || github.event_name == 'release' || github.event.name == 'workflow_dispatch') && 'type=gha,mode=max,scope=amd64' || '' }}
+          cache-to: ${{ ((github.ref_name == 'main' && github.event_name == 'push') || github.event_name == 'release' || github.event_name == 'workflow_dispatch') && 'type=gha,mode=max,scope=amd64' || '' }}
           cache-from: type=gha,scope=amd64
 
       - name: Export digest
