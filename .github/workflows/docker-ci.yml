@@ -386,12 +386,15 @@ jobs:
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
             type=sha
 
       - name: Create version manifest and push
         run: |
           docker buildx imagetools create \
-            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
 
       - name: Inspect image
         run: |
