@@ -36,8 +36,9 @@ RUN apt-get install -y \
     curl \
     ssh \
     nano \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean all \
+    && apt-get purge \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN echo "rstudio ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
 
