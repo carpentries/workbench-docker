@@ -35,10 +35,10 @@ cd ~/lessons
 git clone git@github.com:swcarpentry/shell-novice.git
 
 # create a workbench-lessons named volume, and copy in the shell-novice content
-curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/refs/heads/main/scripts/setup_named_volume.sh | bash -s -- ~/lessons/shell-novice
+curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/main/scripts/setup_named_volume.sh | bash -s -- ~/lessons/shell-novice
 
 # start the workbench container
-curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/refs/heads/main/scripts/run_workbench.sh | bash
+curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/main/scripts/run_workbench.sh | bash
 ```
 
 Then go to `http://localhost:8787` in your web browser to access the Rstudio Server running in your container.
@@ -53,7 +53,7 @@ There are two optional flags that can be supplied to the run_workbench.sh script
 For example:
 
 ```bash
-curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/refs/heads/main/scripts/run_workbench.sh | bash -s -- -p 8999 -t dev-0.2.1
+curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/main/scripts/run_workbench.sh | bash -s -- -p 8999 -t dev-0.2.1
 ```
 
 ### Pretty Quick
