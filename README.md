@@ -13,13 +13,17 @@ We currently provide two pre-built images:
 
 ## Prerequisites
 
-**These instructions assume you already have a GitHub account and have your SSH key added to it.**
+These instructions assume:
+- you are using Linux and the bash shell
+- you already have a GitHub account and have your SSH key added to it
 
 1. Install Docker Desktop for [your operating system](https://docs.docker.com/compose/install/)
-2. Open a terminal (bash, zsh, powershell, etc)
+2. Open a terminal
 3. Then:
 
-## Super Quick Start
+## Quick Starts
+
+### Super Quick
 
 ```bash
 # go home
@@ -39,8 +43,7 @@ curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/refs/head
 
 Then go to `http://localhost:8787` in your web browser to access the Rstudio Server running in your container.
 
-
-## Quick Start
+### Pretty Quick
 
 ```bash
 # go home
@@ -69,8 +72,42 @@ cd workbench-docker
 
 Then go to `http://localhost:8787` in your web browser to access the Rstudio Server running in your container.
 
+### Building your lesson
 
-## Using the Workbench Image
+Once you have your container up and running, you can build your lesson straight away using:
+
+```r
+sandpaper::serve("/home/rstudio/lessons/shell-novice")
+```
+
+#### Lessons using renv
+
+If the lesson you are building uses Rmarkdown and any extra R packages, you need to run two helper scripts first.
+
+Click on the Terminal tab in Rstudio, and at the prompt go to your lesson directory, e.g.
+
+```bash
+cd ~/lessons/R-ecology-lesson
+```
+
+Then setup any lesson dependencies:
+
+```bash
+Rscript ~/.workbench/setup_lesson_deps.R
+```
+
+And then install the R packages the lesson needs:
+
+```bash
+Rscript ~/.workbench/fortify_renv_cache.R
+```
+
+These two scripts will install all the required dependencies for the lesson.
+
+You can then call `sandpaper::serve()` as above to serve!
+
+
+## In Depth: Using the Workbench Image
 
 ### Pulling the latest pre-built image
 
