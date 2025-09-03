@@ -43,6 +43,19 @@ curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/refs/head
 
 Then go to `http://localhost:8787` in your web browser to access the Rstudio Server running in your container.
 
+#### Script Options
+
+There are two optional flags that can be supplied to the run_workbench.sh script:
+
+- `-t` : allows the use of a different workbench-docker image than the default `latest`, e.g. `-t dev-0.2.1` will use the `carpentries/workbench-docker:dev-0.2.1` image
+- `-p` : allows setting a different port that rstudio server runs on which by default is `8787`, e.g. `-p 8999` will run RStudio on `http://localhost:8999`
+
+For example:
+
+```bash
+curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/refs/heads/main/scripts/run_workbench.sh | bash -s -- -p 8999 -t dev-0.2.1
+```
+
 ### Pretty Quick
 
 ```bash
