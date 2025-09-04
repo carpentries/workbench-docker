@@ -14,7 +14,12 @@ on:
         required: true
         default: 'Maintainer (via GitHub)'
       no-latest:
-        description: 'Only push version tag, not the "latest" tag?'
+        description: 'Publish development image(s), i.e. no latest?'
+        required: false
+        default: false
+        type: boolean
+      build-arm:
+        description: 'Build ARM64 image?'
         required: false
         default: false
         type: boolean
@@ -86,9 +91,12 @@ jobs:
         github.event_name == 'release' ||
         (
           github.event_name == 'push' &&
-          (
-            startsWith(github.ref_name, 'release-')
-          )
+          startsWith(github.ref_name, 'release-')
+        ) ||
+        (
+          github.event_name == 'workflow_dispatch' &&
+          startsWith(github.ref_name, 'dev-') &&
+          github.event.inputs.build-arm
         ) &&
         github.repository == 'carpentries/workbench-docker'
       )
@@ -324,7 +332,17 @@ jobs:
           cache-from: type=gha,scope=amd64
 
   publish-arm64:
-    if: github.event_name == 'release' && !github.event.inputs.no-latest && github.repository == 'carpentries/workbench-docker'
+    if: |
+      github.event_name == 'release' ||
+      (
+        github.event_name == 'workflow_dispatch' &&
+        (
+          startsWith(github.ref_name, 'dev-') &&
+          github.event.inputs.no-latest &&
+          github.event.inputs.build-arm
+        )
+      ) &&
+      github.repository == 'carpentries/workbench-docker'
     needs:
         - build-arm64
         - publish-test
@@ -346,13 +364,24 @@ jobs:
         - name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v3
 
-        - name: Push ARM64 image
+        - name: Push version ARM64 image only
+          if: ${{ github.event.inputs.no-latest }}
           uses: docker/build-push-action@v6
           with:
             platforms: linux/arm64
             push: true
             labels: ${{ steps.meta.outputs.labels }}
-            tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64","${{ env.DOCKERHUB_REPO }}:latest-arm64"
+            tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64"
+            cache-from: type=gha,scope=arm64
+
+        - name: Push ARM64 image
+          if: ${{ github.event_name == 'release' && !github.event.inputs.no-latest }}
+          uses: docker/build-push-action@v6
+          with:
+            platforms: linux/arm64
+            push: true
+            labels: ${{ steps.meta.outputs.labels }}
+            tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64","${{ env.DOCKERHUB_REPO }}:latest-amd64"
             cache-from: type=gha,scope=arm64
 
   merge-version-only:
@@ -390,11 +419,20 @@ jobs:
             type=semver,pattern={{major}}
             type=sha
 
-      - name: Create version manifest and push
+      - name: Create AMD version manifest and push
+        if: !github.event.inputs.build-arm
         run: |
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
             ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+
+      - name: Create all version manifest and push
+        if: github.event.inputs.build-arm
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64 \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64
 
       - name: Inspect image
         run: |

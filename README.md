@@ -9,7 +9,8 @@ We currently provide two pre-built images:
 ## Current Known Issues
 
 - Building images locally from scratch are likely not to work on Mac M* (M1, M2, etc), but should be fine on Mac Intel
-- The container currently runs as root, so any files written to the mounted lesson volume will be owned on the host by root
+- The container currently runs as root, so any files written to a mounted lesson volume will be owned on the host by root.
+  This can be avoided by using named volumes, documented below.
 
 ## Prerequisites
 
