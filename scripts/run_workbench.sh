@@ -26,6 +26,13 @@ while getopts 'l:p:t:h' opt; do
 done
 shift "$(($OPTIND -1))"
 
+dver=$(docker version --format '{{.Server.Version}}' | cut -d. -f1)
+# if docker is not running or version is less than 20
+if [ $? -ne 0 ] || [ $dver -lt 20 ]; then
+  echo "Docker is not running or the version is less than 20. Please start Docker and/or update to version 20 or higher."
+  exit 1
+fi
+
 # pull if none exists
 img=$(docker image ls -q carpentries/workbench-docker:$WORKBENCH_TAG)
 if [ -z $img ]; then
@@ -35,7 +42,10 @@ fi
 
 # stop all running carpentries-workbench containers
 echo "Stopping all running carpentries-workbench containers ..."
-docker stop $(docker ps -a | grep carpentries-workbench | cut -d " " -f 1)
+running=$(docker ps -a | grep carpentries-workbench | cut -d " " -f 1)
+if [ ! -z "$running" ]; then
+  docker stop $running
+fi
 
 # check if a container exists
 docker ps -a --format 'table {{.Image}}' | grep workbench-docker:$WORKBENCH_TAG
@@ -44,10 +54,18 @@ if [ $? -eq 1 ]; then
   echo "Starting carpentries-workbench-$WORKBENCH_TAG container ..."
   docker run -d -it --name carpentries-workbench-$WORKBENCH_TAG --user rstudio -p $PORT:8787 -v ~/.ssh://home/rstudio/.ssh:ro -v ~/.gnupg://home/rstudio/.gnupg -v ~/.gitconfig://home/rstudio/.gitconfig -v workbench-lessons:$LESSONS_DIR -e DISABLE_AUTH=true carpentries/workbench-docker:$WORKBENCH_TAG //home/rstudio/start.sh
 
-  echo "Open http://localhost:$PORT in your web browser."
+  if [ $? -eq 0 ]; then
+    echo ""
+    echo "--- WORKBENCH-DOCKER RUNNING ---"
+    echo "Open http://localhost:$PORT in your web browser."
+  fi
 else
   echo "Starting carpentries-workbench-$WORKBENCH_TAG container ..."
   docker start carpentries-workbench-$WORKBENCH_TAG
 
-  echo "Open http://localhost:$PORT in your web browser."
+  if [ $? -eq 0 ]; then
+    echo ""
+    echo "--- WORKBENCH-DOCKER RUNNING ---"
+    echo "Open http://localhost:$PORT in your web browser."
+  fi
 fi
