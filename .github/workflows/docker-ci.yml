@@ -420,14 +420,14 @@ jobs:
             type=sha
 
       - name: Create AMD version manifest and push
-        if: !github.event.inputs.build-arm
+        if: github.event.inputs.build-arm == 'false'
         run: |
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
             ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
 
       - name: Create all version manifest and push
-        if: github.event.inputs.build-arm
+        if: github.event.inputs.build-arm == 'true'
         run: |
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
