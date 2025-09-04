@@ -1,11 +1,13 @@
 #!/bin/bash
-export LESSON_NAME="$1"
 export GPG_TTY=$(tty)
 
-echo "Adding git safe directory..."
+LESSONS_DIR="//home/rstudio/lessons"
 
-cd /home/rstudio/lessons/$LESSON_NAME
-git config --add safe.directory /home/rstudio/lessons/$LESSON_NAME
+echo "Adding git safe directories..."
+
+for d in $LESSONS_DIR/*/ ; do
+  git config --add safe.directory "$d"
+done
 
 echo "Using env..."
 env

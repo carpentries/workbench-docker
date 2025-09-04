@@ -23,6 +23,8 @@ cat("Repositories Used")
 print(getOption("repos"))
 cat("::endgroup::\n")
 
+Sys.setenv("RENV_PROFILE" = "lesson-requirements")
+
 wd <- "."
 req <- function(pkg) {
     if (!requireNamespace(pkg, quietly = TRUE))
@@ -42,7 +44,6 @@ if (file.exists(file.path(wd, 'renv'))) {
         try(file.remove("DESCRIPTION"), silent = TRUE)
     }
     req("renv")
-    Sys.setenv("RENV_PROFILE" = "lesson-requirements")
     tryCatch(sandpaper::manage_deps(path = wd, quiet = FALSE, use_site_libs = TRUE),
         error = function(e) {
             iss <- "https://github.com/rstudio/renv/issues/1184"

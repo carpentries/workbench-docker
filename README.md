@@ -13,11 +13,50 @@ We currently provide two pre-built images:
 
 ## Prerequisites
 
+These instructions assume:
+- you are using Linux and the bash shell
+- you already have a GitHub account and have your SSH key added to it
+
 1. Install Docker Desktop for [your operating system](https://docs.docker.com/compose/install/)
-2. Open a terminal (bash, zsh, powershell, etc)
+2. Open a terminal
 3. Then:
 
-## Quick Start
+## Quick Starts
+
+### Super Quick
+
+```bash
+# go home
+cd ~
+
+# make a `lessons` folder in your home directory and clone in a lesson
+mkdir ~/lessons
+cd ~/lessons
+git clone git@github.com:swcarpentry/shell-novice.git
+
+# create a workbench-lessons named volume, and copy in the shell-novice content
+curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/main/scripts/setup_named_volume.sh | bash -s -- ~/lessons/shell-novice
+
+# start the workbench container
+curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/main/scripts/run_workbench.sh | bash
+```
+
+Then go to `http://localhost:8787` in your web browser to access the Rstudio Server running in your container.
+
+#### Script Options
+
+There are two optional flags that can be supplied to the run_workbench.sh script:
+
+- `-t` : allows the use of a different workbench-docker image than the default `latest`, e.g. `-t dev-0.2.1` will use the `carpentries/workbench-docker:dev-0.2.1` image
+- `-p` : allows setting a different port that rstudio server runs on which by default is `8787`, e.g. `-p 8999` will run RStudio on `http://localhost:8999`
+
+For example:
+
+```bash
+curl -s https://raw.githubusercontent.com/carpentries/workbench-docker/main/scripts/run_workbench.sh | bash -s -- -p 8999 -t dev-0.2.1
+```
+
+### Pretty Quick
 
 ```bash
 # go home
@@ -41,10 +80,47 @@ cd workbench-docker
 ./scripts/setup_named_volume.sh ~/lessons/shell-novice
 
 # start the workbench container
-./scripts/run_workbench.sh shell-novice
+./scripts/run_workbench.sh
 ```
 
-## Using the Workbench Image
+Then go to `http://localhost:8787` in your web browser to access the Rstudio Server running in your container.
+
+### Building your lesson
+
+Once you have your container up and running, you can build your lesson straight away using:
+
+```r
+sandpaper::serve("/home/rstudio/lessons/shell-novice")
+```
+
+#### Lessons using renv
+
+If the lesson you are building uses Rmarkdown and any extra R packages, you need to run two helper scripts first.
+
+Click on the Terminal tab in Rstudio, and at the prompt go to your lesson directory, e.g.
+
+```bash
+cd ~/lessons/R-ecology-lesson
+```
+
+Then setup any lesson dependencies:
+
+```bash
+Rscript ~/.workbench/setup_lesson_deps.R
+```
+
+And then install the R packages the lesson needs:
+
+```bash
+Rscript ~/.workbench/fortify_renv_cache.R
+```
+
+These two scripts will install all the required dependencies for the lesson.
+
+You can then call `sandpaper::serve()` as above to serve!
+
+
+## In Depth: Using the Workbench Image
 
 ### Pulling the latest pre-built image
 
@@ -278,13 +354,13 @@ To add another lesson to the existing `workbench-lessons` named volume, rerun th
 
 #### Using the `workbench-lessons` named volume
 
-Within an R session running inside the container:
+Either, within an R session running inside the container:
 
 ```bash
 docker run --rm -it --name carpentries-workbench --user rstudio -v workbench-lessons:/home/rstudio/lessons carpentries/workbench-docker:latest R
 ```
 
-Within an RStudio instance running inside the container, specifying a lesson name that is in your named volume as the final argument, e.g. `R-ecology-lesson` or `shell-novice`:
+Or, within an RStudio instance running inside the container:
 
 ```bash
 docker run -it \
@@ -294,10 +370,8 @@ docker run -it \
 -v workbench-lessons:/home/rstudio/lessons \
 -e DISABLE_AUTH=true \
 carpentries/workbench-docker:latest \
-/home/rstudio/start.sh shell-novice
+/home/rstudio/start.sh
 ```
-
-The start.sh script builds and installs any dependencies, including those specified within a `renv` inside the lesson.
 
 ### Mounting a lesson to use with a pre-built image
 
@@ -321,7 +395,7 @@ docker run -it \
 -e USERID=$(id -u) \
 -e GROUPID=$(id -g) \
 carpentries/workbench-docker:latest \
-/home/rstudio/start.sh shell-novice
+/home/rstudio/start.sh
 ```
 
 You can now open `localhost:8787` in your browser and you will be able to use a full RStudio server instance from within the container.
@@ -495,7 +569,7 @@ docker run -it \
 -v ~/.gitconfig:/home/rstudio/.gitconfig \
 -e DISABLE_AUTH=true \
 carpentries/workbench-docker:latest \
-/home/rstudio/start.sh shell-novice
+/home/rstudio/start.sh
 ```
 
 ### GPG Signing
@@ -519,7 +593,7 @@ docker run -it \
 -v ~/.gnupg:/home/rstudio/.gnupg \
 -e DISABLE_AUTH=true \
 carpentries/workbench-docker:latest \
-/home/rstudio/start.sh shell-novice
+/home/rstudio/start.sh
 ```
 
 ## Getting help
