@@ -384,9 +384,9 @@ jobs:
             tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64","${{ env.DOCKERHUB_REPO }}:latest-amd64"
             cache-from: type=gha,scope=arm64
 
-  merge-version-only:
+  merge-amd64-only:
     runs-on: ubuntu-latest
-    if: github.event.inputs.no-latest && github.repository == 'carpentries/workbench-docker'
+    if: github.event.inputs.no-latest && !github.event.inputs.build-arm && github.repository == 'carpentries/workbench-docker'
     needs:
       - publish-amd64
     steps:
@@ -420,14 +420,52 @@ jobs:
             type=sha
 
       - name: Create AMD version manifest and push
-        if: ${{ !github.event.inputs.build-arm }}
         run: |
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
             ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
 
-      - name: Create all version manifest and push
-        if: ${{ github.event.inputs.build-arm }}
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}
+
+  merge-amd64-arm64-only:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.no-latest && github.event.inputs.build-arm && github.repository == 'carpentries/workbench-docker'
+    needs:
+      - publish-amd64
+      - publish-arm64
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKERHUB_REPO }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Create version manifest and push
         run: |
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
