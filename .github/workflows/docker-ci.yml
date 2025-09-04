@@ -345,7 +345,7 @@ jobs:
       github.repository == 'carpentries/workbench-docker'
     needs:
         - build-arm64
-        - publish-test
+        - push-test
     runs-on: ubuntu-24.04-arm
     steps:
         - name: Login to Docker Hub
@@ -480,6 +480,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && !github.event.inputs.no-latest && github.repository == 'carpentries/workbench-docker'
     needs:
+      - publish-test
       - publish-amd64
       - publish-arm64
     steps:
