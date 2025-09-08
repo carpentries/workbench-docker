@@ -8,8 +8,7 @@ LABEL "maintainer.email"="robertdavey@carpentries.org"
 SHELL ["/bin/bash", "-c"]
 
 # update and install base build tools
-RUN apt-get update
-RUN apt-get install -y git autoconf build-essential
+RUN apt-get update && apt-get install -y git autoconf build-essential
 
 # Install system dependencies
 RUN apt-get install -y \
@@ -60,9 +59,9 @@ COPY .Renviron /home/rstudio/.Renviron
 RUN chown -R rstudio:rstudio /home/rstudio/.Renviron
 
 COPY scripts/* /home/rstudio/.workbench/
-RUN chmod +x /home/rstudio/.workbench/*
-RUN chown -R rstudio:rstudio /home/rstudio/.workbench
-RUN source /home/rstudio/.workbench/init_env.sh
+RUN chmod +x /home/rstudio/.workbench/* && \
+    chown -R rstudio:rstudio /home/rstudio/.workbench && \
+    source /home/rstudio/.workbench/init_env.sh
 
 RUN Rscript /home/rstudio/.workbench/deps.R
 
@@ -70,13 +69,13 @@ RUN Rscript /home/rstudio/.workbench/deps.R
 RUN rm -rf /tmp/downloaded_packages
 
 COPY .env /home/rstudio/.env
-RUN chmod +rx /home/rstudio/.env
-RUN chown rstudio:rstudio /home/rstudio/.env
+RUN chmod +rx /home/rstudio/.env && \
+    chown rstudio:rstudio /home/rstudio/.env
 
 COPY local_entrypoint.sh .
-RUN chmod +x local_entrypoint.sh
-RUN chown rstudio:rstudio local_entrypoint.sh
+RUN chmod +x local_entrypoint.sh && \
+    chown rstudio:rstudio local_entrypoint.sh
 
 COPY start.sh .
-RUN chmod +x start.sh
-RUN chown rstudio:rstudio start.sh
+RUN chmod +x start.sh && \
+    chown rstudio:rstudio start.sh
