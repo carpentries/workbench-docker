@@ -51,7 +51,7 @@ fi
 docker ps -a --format 'table {{.Image}}' | grep workbench-docker:$WORKBENCH_TAG
 if [ $? -eq 1 ]; then
   # no existing containers exists so start a new one
-  echo "Starting carpentries-workbench-$WORKBENCH_TAG container ..."
+  echo "Running carpentries-workbench-$WORKBENCH_TAG container ..."
   docker run -d -it --name carpentries-workbench-$WORKBENCH_TAG --user rstudio -p $PORT:8787 -v ~/.ssh://home/rstudio/.ssh:ro -v ~/.gnupg://home/rstudio/.gnupg -v ~/.gitconfig://home/rstudio/.gitconfig -v workbench-lessons:$LESSONS_DIR -e DISABLE_AUTH=true carpentries/workbench-docker:$WORKBENCH_TAG //home/rstudio/start.sh
 
   if [ $? -eq 0 ]; then
