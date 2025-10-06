@@ -1,6 +1,11 @@
 library(remotes)
 library(httr)
 
+sandpaper_ref <- System.getenv("SANDPAPER_REF", "main")
+varnish_ref <- System.getenv("VARNISH_REF", "main")
+pegboard_ref <- System.getenv("PEGBOARD_REF", "main")
+no_latest <- tolower(System.getenv("NO_LATEST", "false")) %in% c("true", "1", "t", "yes", "y")
+
 install_latest_release <- function(pkg) {
   api_url <- paste0("https://api.github.com/repos/carpentries/", pkg, "/releases/latest")
   resp <- httr::GET(api_url)
@@ -126,9 +131,14 @@ pkgs      <- rbind(sand_deps, varn_deps, sess_deps, with_deps)
 print(pkgs)
 update(pkgs, upgrade = "always")
 
-# install_latest_release("sandpaper")
-install_latest_release("varnish")
-install_latest_release("pegboard")
-
-# install sandpaper from main (0.17.2.9000) until next release (0.17.2)
-remotes::install_github("carpentries/sandpaper", ref = "main")
+if (!no_latest) {
+    message("Installing latest releases of sandpaper, varnish, and pegboard")
+    install_latest_release("sandpaper")
+    install_latest_release("varnish")
+    install_latest_release("pegboard")
+} else {
+    message("Installing sandpaper (", sandpaper_ref, "), varnish (", varnish_ref, "), and pegboard (", pegboard_ref, ")")
+    remotes::install_github("carpentries/sandpaper", ref = sandpaper_ref)
+    remotes::install_github("carpentries/varnish", ref = varnish_ref)
+    remotes::install_github("carpentries/pegboard", ref = pegboard_ref)
+}
