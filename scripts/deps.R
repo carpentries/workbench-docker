@@ -1,10 +1,10 @@
 library(remotes)
 library(httr)
 
-sandpaper_ref <- System.getenv("SANDPAPER_REF", "main")
-varnish_ref <- System.getenv("VARNISH_REF", "main")
-pegboard_ref <- System.getenv("PEGBOARD_REF", "main")
-no_latest <- tolower(System.getenv("NO_LATEST", "false")) %in% c("true", "1", "t", "yes", "y")
+sandpaper_ref <- Sys.getenv("SANDPAPER_REF") %||% "main"
+varnish_ref <- Sys.getenv("VARNISH_REF") %||% "main"
+pegboard_ref <- Sys.getenv("PEGBOARD_REF") %||% "main"
+no_latest <- Sys.getenv("NO_LATEST") %in% c("true", "TRUE", "1")
 
 install_latest_release <- function(pkg) {
   api_url <- paste0("https://api.github.com/repos/carpentries/", pkg, "/releases/latest")
