@@ -49,6 +49,14 @@ env:
   NO_LATEST: ${{ github.event.inputs.no-latest }}
 
 jobs:
+  test-inputs:
+    name: "Debug Inputs"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Debugging Info"
+        run: env | sort
+        shell: bash
+
   build-amd64:
     runs-on: ubuntu-latest
     steps:
