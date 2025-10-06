@@ -43,9 +43,9 @@ on:
 
 env:
   DOCKERHUB_REPO: carpentries/workbench-docker
-  SANDPAPER_REF: ${{ vars.SANDPAPER_REF || inputs.sandpaper-ref || 'main' }}
-  VARNISH_REF: ${{ vars.VARNISH_REF || inputs.varnish-ref || 'main' }}
-  PEGBOARD_REF: ${{ vars.PEGBOARD_REF || inputs.pegboard-ref || 'main' }}
+  SANDPAPER_REF: ${{ vars.SANDPAPER_REF || github.event.inputs.sandpaper-ref || 'main' }}
+  VARNISH_REF: ${{ vars.VARNISH_REF || github.event.inputs.varnish-ref || 'main' }}
+  PEGBOARD_REF: ${{ vars.PEGBOARD_REF || github.event.inputs.pegboard-ref || 'main' }}
   NO_LATEST: ${{ github.event.inputs.no-latest }}
 
 jobs:
@@ -182,7 +182,7 @@ jobs:
           github.event_name == 'workflow_dispatch' &&
           (
             startsWith(github.ref_name, 'dev-') ||
-            github.event.inputs.run-tests
+            github.event.inputs.run-tests == true
           )
         )
       )
