@@ -1,0 +1,53 @@
+name: Test Env Inputs
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Who triggered this build?'
+        required: true
+        default: 'Maintainer (via GitHub)'
+      no-latest:
+        description: 'Publish development image(s), i.e. no latest?'
+        required: false
+        default: false
+        type: boolean
+      build-arm:
+        description: 'Build ARM64 image?'
+        required: false
+        default: false
+        type: boolean
+      run-tests:
+        description: 'Run Tests'
+        required: false
+        default: false
+        type: boolean
+      sandpaper-ref:
+        description: 'Git ref for Sandpaper (branch, tag, commit)'
+        required: false
+        type: string
+      varnish-ref:
+        description: 'Git ref for Varnish (branch, tag, commit)'
+        required: false
+        type: string
+      pegboard-ref:
+        description: 'Git ref for Pegboard (branch, tag, commit)'
+        required: false
+        type: string
+
+env:
+  DOCKERHUB_REPO: carpentries/workbench-docker
+  SANDPAPER_REF: ${{ vars.SANDPAPER_REF || github.event.inputs.sandpaper-ref || 'main' }}
+  VARNISH_REF: ${{ vars.VARNISH_REF || github.event.inputs.varnish-ref || 'main' }}
+  PEGBOARD_REF: ${{ vars.PEGBOARD_REF || github.event.inputs.pegboard-ref || 'main' }}
+  NO_LATEST: ${{ github.event.inputs.no-latest }}
+
+jobs:
+  test-inputs:
+    name: "Debug Inputs"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Debugging Info"
+        run: env | sort
+        shell: bash
