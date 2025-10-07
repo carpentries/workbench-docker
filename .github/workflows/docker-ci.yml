@@ -352,6 +352,11 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
+          build-args: |
+            SANDPAPER_REF=${{ env.SANDPAPER_REF }}
+            VARNISH_REF=${{ env.VARNISH_REF }}
+            PEGBOARD_REF=${{ env.PEGBOARD_REF }}
+            NO_LATEST=${{ env.NO_LATEST }}
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64"
@@ -407,6 +412,11 @@ jobs:
           uses: docker/build-push-action@v6
           with:
             platforms: linux/arm64
+            build-args: |
+              SANDPAPER_REF=${{ env.SANDPAPER_REF }}
+              VARNISH_REF=${{ env.VARNISH_REF }}
+              PEGBOARD_REF=${{ env.PEGBOARD_REF }}
+              NO_LATEST=${{ env.NO_LATEST }}
             push: true
             labels: ${{ steps.meta.outputs.labels }}
             tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64"

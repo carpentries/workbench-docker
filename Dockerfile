@@ -7,6 +7,29 @@ LABEL "maintainer.email"="robertdavey@carpentries.org"
 
 SHELL ["/bin/bash", "-c"]
 
+WORKDIR /home/rstudio
+
+# copy over all scripts
+COPY .Renviron /home/rstudio/.Renviron
+RUN chown -R rstudio:rstudio /home/rstudio/.Renviron
+
+COPY .env /home/rstudio/.env
+RUN chmod +rx /home/rstudio/.env && \
+    chown rstudio:rstudio /home/rstudio/.env
+
+COPY local_entrypoint.sh .
+RUN chmod +x local_entrypoint.sh && \
+    chown rstudio:rstudio local_entrypoint.sh
+
+COPY start.sh .
+RUN chmod +x start.sh && \
+    chown rstudio:rstudio start.sh
+
+COPY scripts/* /home/rstudio/.workbench/
+RUN chmod +x /home/rstudio/.workbench/* && \
+    chown -R rstudio:rstudio /home/rstudio/.workbench && \
+    source /home/rstudio/.workbench/init_env.sh
+
 # update and install base build tools
 RUN apt-get update && apt-get install -y git autoconf build-essential
 
@@ -56,29 +79,8 @@ ENV VARNISH_REF=${VARNISH_REF}
 ENV PEGBOARD_REF=${PEGBOARD_REF}
 ENV NO_LATEST=${NO_LATEST}
 
-WORKDIR /home/rstudio
-
-COPY .Renviron /home/rstudio/.Renviron
-RUN chown -R rstudio:rstudio /home/rstudio/.Renviron
-
-COPY scripts/* /home/rstudio/.workbench/
-RUN chmod +x /home/rstudio/.workbench/* && \
-    chown -R rstudio:rstudio /home/rstudio/.workbench && \
-    source /home/rstudio/.workbench/init_env.sh
-
+# install dependencies and workbench packages
 RUN Rscript /home/rstudio/.workbench/deps.R
 
 # clean up
 RUN rm -rf /tmp/downloaded_packages
-
-COPY .env /home/rstudio/.env
-RUN chmod +rx /home/rstudio/.env && \
-    chown rstudio:rstudio /home/rstudio/.env
-
-COPY local_entrypoint.sh .
-RUN chmod +x local_entrypoint.sh && \
-    chown rstudio:rstudio local_entrypoint.sh
-
-COPY start.sh .
-RUN chmod +x start.sh && \
-    chown rstudio:rstudio start.sh
