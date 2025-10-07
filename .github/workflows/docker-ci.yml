@@ -46,7 +46,7 @@ env:
   SANDPAPER_REF: ${{ vars.SANDPAPER_REF || inputs.sandpaper-ref || 'main' }}
   VARNISH_REF: ${{ vars.VARNISH_REF || inputs.varnish-ref || 'main' }}
   PEGBOARD_REF: ${{ vars.PEGBOARD_REF || inputs.pegboard-ref || 'main' }}
-  NO_LATEST: ${{ inputs.no-latest }}
+  NO_LATEST: ${{ github.event.inputs.no-latest }}
 
 jobs:
   test-inputs:
@@ -88,7 +88,7 @@ jobs:
             type=docker,dest=${{ runner.temp }}/workbench-amd64.tar
           push: false
           tags: ${{ env.DOCKERHUB_REPO }}
-          cache-to: ${{ ((github.ref_name == 'main' && github.event_name == 'push') || github.event_name == 'release' || github.event_name == 'workflow_dispatch') && 'type=gha,mode=max,scope=amd64' || '' }}
+          cache-to: ${{ (((github.ref_name == 'main' && github.event_name == 'push') || github.event_name == 'release' || github.event_name == 'workflow_dispatch') && 'type=gha,mode=max,scope=amd64') || '' }}
           cache-from: type=gha,scope=amd64
 
       - name: Export digest

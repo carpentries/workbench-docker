@@ -41,7 +41,7 @@ repos <- list(
 
 options(pak.no_extra_messages = TRUE, repos = repos)
 
-cat("Repositories Used")
+cat("Repositories Used\n")
 print(getOption("repos"))
 cat("::endgroup::\n")
 
@@ -118,7 +118,7 @@ for (pkg in common_deps) {
     install.packages(pkg)
 }
 
-cat("Install Workbench package dependencies")
+cat("::group::Install Workbench package dependencies\n")
 sand_deps <- remotes::package_deps("sandpaper")
 varn_deps <- remotes::package_deps("varnish")
 sess_deps <- remotes::package_deps("sessioninfo")
@@ -128,13 +128,13 @@ print(pkgs)
 update(pkgs, upgrade = "always")
 cat("::endgroup::\n")
 
-cat("Install Workbench packages")
+cat("::group::Install Workbench packages\n")
 sandpaper_ref <- Sys.getenv("SANDPAPER_REF", "main")
 varnish_ref <- Sys.getenv("VARNISH_REF", "main")
 pegboard_ref <- Sys.getenv("PEGBOARD_REF", "main")
 no_latest <- as.logical(Sys.getenv("NO_LATEST", "false"))
 
-message("Use latest workbench packages? [", no_latest, "]")
+message("Use latest workbench packages? [", !no_latest, "]")
 
 if (!no_latest) {
     install_latest_release("sandpaper")
