@@ -1,11 +1,6 @@
 library(remotes)
 library(httr)
 
-sandpaper_ref <- Sys.getenv("SANDPAPER_REF") %||% "main"
-varnish_ref <- Sys.getenv("VARNISH_REF") %||% "main"
-pegboard_ref <- Sys.getenv("PEGBOARD_REF") %||% "main"
-no_latest <- Sys.getenv("NO_LATEST") %in% c("true", "TRUE", "1")
-
 install_latest_release <- function(pkg) {
   api_url <- paste0("https://api.github.com/repos/carpentries/", pkg, "/releases/latest")
   resp <- httr::GET(api_url)
@@ -123,6 +118,7 @@ for (pkg in common_deps) {
     install.packages(pkg)
 }
 
+cat("Install Workbench package dependencies")
 sand_deps <- remotes::package_deps("sandpaper")
 varn_deps <- remotes::package_deps("varnish")
 sess_deps <- remotes::package_deps("sessioninfo")
@@ -130,9 +126,17 @@ with_deps <- remotes::package_deps("withr")
 pkgs      <- rbind(sand_deps, varn_deps, sess_deps, with_deps)
 print(pkgs)
 update(pkgs, upgrade = "always")
+cat("::endgroup::\n")
+
+cat("Install Workbench packages")
+sandpaper_ref <- Sys.getenv("SANDPAPER_REF", "main")
+varnish_ref <- Sys.getenv("VARNISH_REF", "main")
+pegboard_ref <- Sys.getenv("PEGBOARD_REF", "main")
+no_latest <- as.logical(Sys.getenv("NO_LATEST", "false"))
+
+message("Use latest workbench packages? [", no_latest, "]")
 
 if (!no_latest) {
-    message("Installing latest releases of sandpaper, varnish, and pegboard")
     install_latest_release("sandpaper")
     install_latest_release("varnish")
     install_latest_release("pegboard")
@@ -142,3 +146,4 @@ if (!no_latest) {
     remotes::install_github("carpentries/varnish", ref = varnish_ref)
     remotes::install_github("carpentries/pegboard", ref = pegboard_ref)
 }
+cat("::endgroup::\n")

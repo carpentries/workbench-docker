@@ -44,14 +44,17 @@ RUN echo "rstudio ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
 # setup base renv for lessons that want to use it
 RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "gh", "yaml"), repos = c(CRAN = "https://cloud.r-project.org"))'
 
-ARG SANDPAPER_VER
-ARG VARNISH_VER
-ARG PEGBOARD_VER
+# enable build args
+ARG SANDPAPER_REF
+ARG VARNISH_REF
+ARG PEGBOARD_REF
+ARG NO_LATEST
 
 # Convert ARG to ENV so they persist inside the container
-ENV SANDPAPER_VER=${SANDPAPER_VER}
-ENV VARNISH_VER=${VARNISH_VER}
-ENV PEGBOARD_VER=${PEGBOARD_VER}
+ENV SANDPAPER_REF=${SANDPAPER_REF}
+ENV VARNISH_REF=${VARNISH_REF}
+ENV PEGBOARD_REF=${PEGBOARD_REF}
+ENV NO_LATEST=${NO_LATEST}
 
 WORKDIR /home/rstudio
 
