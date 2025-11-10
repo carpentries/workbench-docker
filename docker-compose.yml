@@ -6,9 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        SANDPAPER_VER: ${SANDPAPER_VER}
-        VARNISH_VER: ${VARNISH_VER}
-        PEGBOARD_VER: ${PEGBOARD_VER}
+        SANDPAPER_REF: ${SANDPAPER_REF}
+        VARNISH_REF: ${VARNISH_REF}
+        PEGBOARD_REF: ${PEGBOARD_REF}
     env_file:
       - .env
 

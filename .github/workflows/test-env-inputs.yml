@@ -40,7 +40,7 @@ env:
   SANDPAPER_REF: ${{ vars.SANDPAPER_REF || github.event.inputs.sandpaper-ref || 'main' }}
   VARNISH_REF: ${{ vars.VARNISH_REF || github.event.inputs.varnish-ref || 'main' }}
   PEGBOARD_REF: ${{ vars.PEGBOARD_REF || github.event.inputs.pegboard-ref || 'main' }}
-  NO_LATEST: ${{ github.event.inputs.no-latest }}
+  NO_LATEST: ${{ inputs.no-latest }}
 
 jobs:
   test-inputs:

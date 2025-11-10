@@ -28,11 +28,35 @@ on:
         required: false
         default: false
         type: boolean
+      sandpaper-ref:
+        description: 'Git ref for Sandpaper (branch, tag, commit)'
+        required: false
+        type: string
+      varnish-ref:
+        description: 'Git ref for Varnish (branch, tag, commit)'
+        required: false
+        type: string
+      pegboard-ref:
+        description: 'Git ref for Pegboard (branch, tag, commit)'
+        required: false
+        type: string
 
 env:
   DOCKERHUB_REPO: carpentries/workbench-docker
+  SANDPAPER_REF: ${{ vars.SANDPAPER_REF || inputs.sandpaper-ref || 'main' }}
+  VARNISH_REF: ${{ vars.VARNISH_REF || inputs.varnish-ref || 'main' }}
+  PEGBOARD_REF: ${{ vars.PEGBOARD_REF || inputs.pegboard-ref || 'main' }}
+  NO_LATEST: ${{ github.event.inputs.no-latest }}
 
 jobs:
+  test-inputs:
+    name: "Debug Inputs"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Debugging Info"
+        run: env | sort
+        shell: bash
+
   build-amd64:
     runs-on: ubuntu-latest
     steps:
@@ -54,12 +78,17 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
+          build-args: |
+            SANDPAPER_REF=${{ env.SANDPAPER_REF }}
+            VARNISH_REF=${{ env.VARNISH_REF }}
+            PEGBOARD_REF=${{ env.PEGBOARD_REF }}
+            NO_LATEST=${{ env.NO_LATEST }}
           outputs: |
             type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
             type=docker,dest=${{ runner.temp }}/workbench-amd64.tar
           push: false
           tags: ${{ env.DOCKERHUB_REPO }}
-          cache-to: ${{ ((github.ref_name == 'main' && github.event_name == 'push') || github.event_name == 'release' || github.event_name == 'workflow_dispatch') && 'type=gha,mode=max,scope=amd64' || '' }}
+          cache-to: ${{ (((github.ref_name == 'main' && github.event_name == 'push') || github.event_name == 'release' || github.event_name == 'workflow_dispatch') && 'type=gha,mode=max,scope=amd64') || '' }}
           cache-from: type=gha,scope=amd64
 
       - name: Export digest
@@ -88,17 +117,19 @@ jobs:
   build-arm64:
     if: |
       (
-        github.event_name == 'release' ||
+        github.repository == 'carpentries/workbench-docker' &&
         (
-          github.event_name == 'push' &&
-          startsWith(github.ref_name, 'release-')
-        ) ||
-        (
-          github.event_name == 'workflow_dispatch' &&
-          startsWith(github.ref_name, 'dev-') &&
-          github.event.inputs.build-arm
-        ) &&
-        github.repository == 'carpentries/workbench-docker'
+          github.event_name == 'release' ||
+          (
+            github.event_name == 'push' &&
+            startsWith(github.ref_name, 'release-')
+          ) ||
+          (
+            github.event_name == 'workflow_dispatch' &&
+            startsWith(github.ref_name, 'dev-') &&
+            inputs.build-arm
+          )
+        )
       )
     runs-on: ubuntu-24.04-arm
     steps:
@@ -120,6 +151,11 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
+          build-args: |
+            SANDPAPER_REF=${{ env.SANDPAPER_REF }}
+            VARNISH_REF=${{ env.VARNISH_REF }}
+            PEGBOARD_REF=${{ env.PEGBOARD_REF }}
+            NO_LATEST=${{ env.NO_LATEST }}
           outputs: |
             type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
             type=docker,dest=${{ runner.temp }}/workbench-arm64.tar
@@ -166,7 +202,7 @@ jobs:
           github.event_name == 'workflow_dispatch' &&
           (
             startsWith(github.ref_name, 'dev-') ||
-            github.event.inputs.run-tests
+            inputs.run-tests
           )
         )
       )
@@ -312,17 +348,22 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Push version AMD64 image only
-        if: ${{ github.event.inputs.no-latest }}
+        if: ${{ inputs.no-latest }}
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
+          build-args: |
+            SANDPAPER_REF=${{ env.SANDPAPER_REF }}
+            VARNISH_REF=${{ env.VARNISH_REF }}
+            PEGBOARD_REF=${{ env.PEGBOARD_REF }}
+            NO_LATEST=${{ env.NO_LATEST }}
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64"
           cache-from: type=gha,scope=amd64
 
       - name: Push AMD64 image
-        if: ${{ github.event_name == 'release' && !github.event.inputs.no-latest }}
+        if: ${{ github.event_name == 'release' && !inputs.no-latest }}
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
@@ -333,16 +374,18 @@ jobs:
 
   publish-arm64:
     if: |
-      github.event_name == 'release' ||
+      github.repository == 'carpentries/workbench-docker' &&
       (
-        github.event_name == 'workflow_dispatch' &&
+        github.event_name == 'release' ||
         (
-          startsWith(github.ref_name, 'dev-') &&
-          github.event.inputs.no-latest &&
-          github.event.inputs.build-arm
+          github.event_name == 'workflow_dispatch' &&
+          (
+            startsWith(github.ref_name, 'dev-') &&
+            inputs.no-latest &&
+            inputs.build-arm
+          )
         )
-      ) &&
-      github.repository == 'carpentries/workbench-docker'
+      )
     needs:
         - build-arm64
         - push-test
@@ -365,17 +408,22 @@ jobs:
           uses: docker/setup-buildx-action@v3
 
         - name: Push version ARM64 image only
-          if: ${{ github.event.inputs.no-latest }}
+          if: ${{ inputs.no-latest }}
           uses: docker/build-push-action@v6
           with:
             platforms: linux/arm64
+            build-args: |
+              SANDPAPER_REF=${{ env.SANDPAPER_REF }}
+              VARNISH_REF=${{ env.VARNISH_REF }}
+              PEGBOARD_REF=${{ env.PEGBOARD_REF }}
+              NO_LATEST=${{ env.NO_LATEST }}
             push: true
             labels: ${{ steps.meta.outputs.labels }}
             tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64"
             cache-from: type=gha,scope=arm64
 
         - name: Push ARM64 image
-          if: ${{ github.event_name == 'release' && !github.event.inputs.no-latest }}
+          if: ${{ github.event_name == 'release' && !inputs.no-latest }}
           uses: docker/build-push-action@v6
           with:
             platforms: linux/arm64
@@ -386,7 +434,7 @@ jobs:
 
   merge-amd64-only:
     runs-on: ubuntu-latest
-    if: github.event.inputs.no-latest && !github.event.inputs.build-arm && github.repository == 'carpentries/workbench-docker'
+    if: inputs.no-latest && !inputs.build-arm && github.repository == 'carpentries/workbench-docker'
     needs:
       - publish-amd64
     steps:
@@ -431,7 +479,7 @@ jobs:
 
   merge-amd64-arm64-only:
     runs-on: ubuntu-latest
-    if: github.event.inputs.no-latest && github.event.inputs.build-arm && github.repository == 'carpentries/workbench-docker'
+    if: inputs.no-latest && inputs.build-arm && github.repository == 'carpentries/workbench-docker'
     needs:
       - publish-amd64
       - publish-arm64
@@ -478,7 +526,7 @@ jobs:
 
   merge-all:
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && !github.event.inputs.no-latest && github.repository == 'carpentries/workbench-docker'
+    if: github.event_name == 'release' && !inputs.no-latest && github.repository == 'carpentries/workbench-docker'
     needs:
       - publish-test
       - publish-amd64

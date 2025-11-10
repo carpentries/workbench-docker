@@ -41,7 +41,7 @@ repos <- list(
 
 options(pak.no_extra_messages = TRUE, repos = repos)
 
-cat("Repositories Used")
+cat("Repositories Used\n")
 print(getOption("repos"))
 cat("::endgroup::\n")
 
@@ -118,6 +118,7 @@ for (pkg in common_deps) {
     install.packages(pkg)
 }
 
+cat("::group::Install Workbench package dependencies\n")
 sand_deps <- remotes::package_deps("sandpaper")
 varn_deps <- remotes::package_deps("varnish")
 sess_deps <- remotes::package_deps("sessioninfo")
@@ -125,10 +126,24 @@ with_deps <- remotes::package_deps("withr")
 pkgs      <- rbind(sand_deps, varn_deps, sess_deps, with_deps)
 print(pkgs)
 update(pkgs, upgrade = "always")
+cat("::endgroup::\n")
 
-# install_latest_release("sandpaper")
-install_latest_release("varnish")
-install_latest_release("pegboard")
+cat("::group::Install Workbench packages\n")
+sandpaper_ref <- Sys.getenv("SANDPAPER_REF", "main")
+varnish_ref <- Sys.getenv("VARNISH_REF", "main")
+pegboard_ref <- Sys.getenv("PEGBOARD_REF", "main")
+no_latest <- as.logical(Sys.getenv("NO_LATEST", "false"))
 
-# install sandpaper from main (0.17.2.9000) until next release (0.17.2)
-remotes::install_github("carpentries/sandpaper", ref = "main")
+message("Use latest workbench packages? [", !no_latest, "]")
+
+if (!no_latest) {
+    install_latest_release("sandpaper")
+    install_latest_release("varnish")
+    install_latest_release("pegboard")
+} else {
+    message("Installing sandpaper (", sandpaper_ref, "), varnish (", varnish_ref, "), and pegboard (", pegboard_ref, ")")
+    remotes::install_github("carpentries/sandpaper", ref = sandpaper_ref)
+    remotes::install_github("carpentries/varnish", ref = varnish_ref)
+    remotes::install_github("carpentries/pegboard", ref = pegboard_ref)
+}
+cat("::endgroup::\n")
