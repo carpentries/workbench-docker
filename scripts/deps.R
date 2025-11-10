@@ -132,7 +132,7 @@ cat("::group::Install Workbench packages\n")
 sandpaper_ref <- Sys.getenv("SANDPAPER_REF", "main")
 varnish_ref <- Sys.getenv("VARNISH_REF", "main")
 pegboard_ref <- Sys.getenv("PEGBOARD_REF", "main")
-no_latest <- as.logical(Sys.getenv("NO_LATEST", "false"))
+no_latest <- isFALSE(as.logical(Sys.getenv("NO_LATEST", "FALSE")))
 
 message("Use latest workbench packages? [", !no_latest, "]")
 
