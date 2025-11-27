@@ -61,6 +61,9 @@ RUN apt-get install -y \
     libssl-dev \
     libtiff-dev \
     libx11-dev \
+    libgdal-dev \
+    libudunits2-dev \
+    gdal-bin \
     xdg-utils \
     pngquant \
     pandoc \
@@ -68,6 +71,7 @@ RUN apt-get install -y \
     ssh \
     nano \
     gh \
+    cmake \
     && apt-get clean all \
     && apt-get purge \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
