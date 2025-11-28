@@ -142,8 +142,7 @@ if (use_latest) {
     install_latest_release("sandpaper")
     install_latest_release("varnish")
     install_latest_release("pegboard")
-}
-else {
+} else {
     message("Installing sandpaper (", sandpaper_ref, "), varnish (", varnish_ref, "), and pegboard (", pegboard_ref, ")")
     remotes::install_github("carpentries/sandpaper", ref = sandpaper_ref)
     remotes::install_github("carpentries/varnish", ref = varnish_ref)
