@@ -55,7 +55,7 @@ if (on_linux && has_lock) {
         rmts$supported_os_versions <- sov
     }
     req("desc")
-    remotes::install_github("carpentries/vise@frog-pak-bork-1")
+    remotes::install_github("carpentries/vise@main")
     if (file.exists("DESCRIPTION")) {
         file.rename("DESCRIPTION", "DESCRIPTION.bak")
     }
