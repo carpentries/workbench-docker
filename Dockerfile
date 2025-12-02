@@ -69,7 +69,6 @@ RUN apt-get install -y \
     libudunits2-dev \
     gdal-bin \
     xdg-utils \
-    chromium \
     pngquant \
     pandoc \
     curl \
