@@ -67,6 +67,7 @@ common_deps <- c(
     "glue",
     "highr",
     "htmltools",
+    "htmlwidgets",
     "inline",
     "jquerylib",
     "jsonlite",
@@ -86,6 +87,7 @@ common_deps <- c(
     "RcppParallel",
     "ragg",
     "rappdirs",
+    "raster",
     "readr",
     "reprex",
     "rlang",
@@ -132,11 +134,11 @@ cat("::group::Install Workbench packages\n")
 sandpaper_ref <- Sys.getenv("SANDPAPER_REF", "main")
 varnish_ref <- Sys.getenv("VARNISH_REF", "main")
 pegboard_ref <- Sys.getenv("PEGBOARD_REF", "main")
-no_latest <- isFALSE(as.logical(Sys.getenv("NO_LATEST", "FALSE")))
+use_latest <- isFALSE(as.logical(Sys.getenv("NO_LATEST", "FALSE")))
 
-message("Use latest workbench packages? [", !no_latest, "]")
+message("Use latest workbench packages? [", use_latest, "]")
 
-if (!no_latest) {
+if (use_latest) {
     install_latest_release("sandpaper")
     install_latest_release("varnish")
     install_latest_release("pegboard")

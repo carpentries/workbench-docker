@@ -9,6 +9,7 @@ services:
         SANDPAPER_REF: ${SANDPAPER_REF}
         VARNISH_REF: ${VARNISH_REF}
         PEGBOARD_REF: ${PEGBOARD_REF}
+        NO_LATEST: ${NO_LATEST}
     env_file:
       - .env
 

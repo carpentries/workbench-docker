@@ -31,7 +31,7 @@ RUN chmod +x /home/rstudio/.workbench/* && \
     source /home/rstudio/.workbench/init_env.sh
 
 # update and install base build tools
-RUN apt-get update && apt-get install -y git autoconf build-essential
+RUN apt-get update && apt-get install -y git autoconf build-essential software-properties-common
 
 RUN (type -p wget >/dev/null || (apt install wget -y)) \
 	&& mkdir -p -m 755 /etc/apt/keyrings \
@@ -61,13 +61,22 @@ RUN apt-get install -y \
     libssl-dev \
     libtiff-dev \
     libx11-dev \
+    libgdal-dev \
+    libcairo2-dev \
+    libglpk-dev \
+    libmagick++-dev \
+    libnode-dev \
+    libudunits2-dev \
+    gdal-bin \
     xdg-utils \
+    chromium \
     pngquant \
     pandoc \
     curl \
     ssh \
     nano \
     gh \
+    cmake \
     && apt-get clean all \
     && apt-get purge \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

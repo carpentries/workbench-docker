@@ -30,6 +30,16 @@ req <- function(pkg) {
     if (!requireNamespace(pkg, quietly = TRUE))
         install.packages(pkg)
 }
+
+site_libs <- strsplit(Sys.getenv("R_LIBS_SITE"), ":")[[1]]
+site_libs <- site_libs[site_libs != ""]
+
+if (!is.null(site_libs) && length(site_libs) > 0) {
+    cli::cli_alert("Bootstrapping site libraries")
+    options(renv.settings.external.libraries = site_libs)
+    .libPaths(c(site_libs, .libPaths()))
+}
+
 if (file.exists("DESCRIPTION")) {
     req("remotes")
     remotes::install_deps()
@@ -44,11 +54,16 @@ if (file.exists(file.path(wd, 'renv'))) {
         try(file.remove("DESCRIPTION"), silent = TRUE)
     }
     req("renv")
-    tryCatch(sandpaper::manage_deps(path = wd, quiet = FALSE, use_site_libs = TRUE),
+
+    cat("Loading {renv} project\n")
+    renv::load(path = wd, profile = "lesson-requirements")
+
+    cat("Installing lesson dependencies with {sandpaper}\n")
+    tryCatch(sandpaper::manage_deps(path = wd, profile = "lesson-requirements", quiet = FALSE, use_site_libs = TRUE),
         error = function(e) {
             iss <- "https://github.com/rstudio/renv/issues/1184"
             cli::cli_alert_danger("run failed... attempting to re-run (see {.url {iss}} for details.")
-            sandpaper::manage_deps(path = wd, quiet = FALSE, use_site_libs = TRUE)
+            sandpaper::manage_deps(path = wd, profile = "lesson-requirements", quiet = FALSE, use_site_libs = TRUE)
         }
     )
     cat("::endgroup::\n")
