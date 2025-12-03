@@ -9,7 +9,7 @@ on:
         default: 'Maintainer (via GitHub)'
       no-latest:
         description: 'Publish development image(s), i.e. no latest?'
-        required: false
+        required: true
         default: false
         type: boolean
       build-arm:
