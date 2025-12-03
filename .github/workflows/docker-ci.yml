@@ -46,7 +46,7 @@ env:
   SANDPAPER_REF: ${{ vars.SANDPAPER_REF || inputs.sandpaper-ref || 'main' }}
   VARNISH_REF: ${{ vars.VARNISH_REF || inputs.varnish-ref || 'main' }}
   PEGBOARD_REF: ${{ vars.PEGBOARD_REF || inputs.pegboard-ref || 'main' }}
-  NO_LATEST: ${{ inputs.no-latest }}
+  NO_LATEST: ${{ vars.NO_LATEST || inputs.no-latest || 'false' }}
 
 jobs:
   test-inputs:
