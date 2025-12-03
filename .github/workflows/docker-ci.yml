@@ -429,7 +429,7 @@ jobs:
             platforms: linux/arm64
             push: true
             labels: ${{ steps.meta.outputs.labels }}
-            tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64","${{ env.DOCKERHUB_REPO }}:latest-amd64"
+            tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64","${{ env.DOCKERHUB_REPO }}:latest-arm64"
             cache-from: type=gha,scope=arm64
 
   merge-amd64-only:
