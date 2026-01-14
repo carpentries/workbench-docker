@@ -5,7 +5,7 @@ LABEL "source"="https://github.com/carpentries/workbench-docker/Dockerfile"
 LABEL "maintainer.name"="Robert Davey"
 LABEL "maintainer.email"="robertdavey@carpentries.org"
 
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 WORKDIR /home/rstudio
 
@@ -79,6 +79,13 @@ RUN apt-get install -y \
     && apt-get clean all \
     && apt-get purge \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN arch=$(arch) \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-${arch}.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && sudo ./aws/install \
+    && rm -rf awscliv2.zip ./aws \
+    && aws --version
 
 RUN echo "rstudio ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
 
