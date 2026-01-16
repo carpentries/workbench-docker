@@ -41,8 +41,12 @@ on:
         required: false
         type: string
 
+permissions:
+  packages: write
+
 env:
   DOCKERHUB_REPO: carpentries/workbench-docker
+  GHCR_REPO: ghcr.io/carpentries/workbench-docker
   SANDPAPER_REF: ${{ vars.SANDPAPER_REF || inputs.sandpaper-ref || 'main' }}
   VARNISH_REF: ${{ vars.VARNISH_REF || inputs.varnish-ref || 'main' }}
   PEGBOARD_REF: ${{ vars.PEGBOARD_REF || inputs.pegboard-ref || 'main' }}
@@ -337,6 +341,13 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -359,7 +370,10 @@ jobs:
             NO_LATEST=${{ env.NO_LATEST }}
           push: true
           labels: ${{ steps.meta.outputs.labels }}
-          tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64"
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+            ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-amd64
           cache-from: type=gha,scope=amd64
 
       - name: Push AMD64 image
@@ -369,7 +383,11 @@ jobs:
           platforms: linux/amd64
           push: true
           labels: ${{ steps.meta.outputs.labels }}
-          tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64","${{ env.DOCKERHUB_REPO }}:latest-amd64"
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+            ${{ env.DOCKERHUB_REPO }}:latest-amd64
+            ${{ env.GHCR_REPO }}:latest-amd64
           cache-from: type=gha,scope=amd64
 
   publish-arm64:
@@ -397,6 +415,13 @@ jobs:
             username: ${{ vars.DOCKERHUB_USERNAME }}
             password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+        - name: Login to GHCR
+          uses: docker/login-action@v3
+          with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
         - name: Docker meta
           id: meta
           uses: docker/metadata-action@v5
@@ -419,7 +444,10 @@ jobs:
               NO_LATEST=${{ env.NO_LATEST }}
             push: true
             labels: ${{ steps.meta.outputs.labels }}
-            tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64"
+            tags: |
+              ${{ steps.meta.outputs.tags }}
+              ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64
+              ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-arm64
             cache-from: type=gha,scope=arm64
 
         - name: Push ARM64 image
@@ -429,7 +457,11 @@ jobs:
             platforms: linux/arm64
             push: true
             labels: ${{ steps.meta.outputs.labels }}
-            tags: ${{ steps.meta.outputs.tags }},"${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64","${{ env.DOCKERHUB_REPO }}:latest-arm64"
+            tags: |
+              ${{ steps.meta.outputs.tags }}
+              ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64
+              ${{ env.DOCKERHUB_REPO }}:latest-arm64
+              ${{ env.GHCR_REPO }}:latest-arm64
             cache-from: type=gha,scope=arm64
 
   merge-amd64-only:
@@ -451,6 +483,13 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -460,6 +499,7 @@ jobs:
         with:
           images: |
             ${{ env.DOCKERHUB_REPO }}
+            ${{ env.GHCR_REPO }}
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -471,6 +511,7 @@ jobs:
         run: |
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
+            -t ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }} \
             ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
 
       - name: Inspect image
@@ -497,6 +538,13 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -506,6 +554,7 @@ jobs:
         with:
           images: |
             ${{ env.DOCKERHUB_REPO }}
+            ${{ env.GHCR_REPO }}
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -517,6 +566,7 @@ jobs:
         run: |
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
+            -t ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }} \
             ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64 \
             ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64
 
@@ -554,6 +604,7 @@ jobs:
         with:
           images: |
             ${{ env.DOCKERHUB_REPO }}
+            ${{ env.GHCR_REPO }}
           tags: |
             type=ref,event=tag
             type=semver,pattern={{version}}
@@ -566,11 +617,13 @@ jobs:
         run: |
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }} \
+            -t ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }} \
             ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-amd64 \
             ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-arm64
 
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:latest \
+            -t ${{ env.GHCR_REPO }}:latest \
             ${{ env.DOCKERHUB_REPO }}:latest-amd64 \
             ${{ env.DOCKERHUB_REPO }}:latest-arm64
 
