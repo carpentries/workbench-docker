@@ -624,15 +624,23 @@ jobs:
         run: |
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }} \
-            -t ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }} \
             ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-amd64 \
             ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-arm64
 
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:latest \
-            -t ${{ env.GHCR_REPO }}:latest \
             ${{ env.DOCKERHUB_REPO }}:latest-amd64 \
             ${{ env.DOCKERHUB_REPO }}:latest-arm64
+
+          docker buildx imagetools create \
+            -t ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }} \
+            ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-amd64 \
+            ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-arm64
+
+          docker buildx imagetools create \
+            -t ${{ env.GHCR_REPO }}:latest \
+            ${{ env.GHCR_REPO }}:latest-amd64 \
+            ${{ env.GHCR_REPO }}:latest-arm64
 
       - name: Inspect image
         run: |
