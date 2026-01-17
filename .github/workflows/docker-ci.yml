@@ -261,6 +261,7 @@ jobs:
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm \
+          -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }} \
@@ -323,6 +324,7 @@ jobs:
       - name: Run Tests on ${{ matrix.lesson }}
         run: |
           docker run --rm \
+          -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }} \
@@ -387,6 +389,7 @@ jobs:
             ${{ steps.meta.outputs.tags }}
             ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
             ${{ env.DOCKERHUB_REPO }}:latest-amd64
+            ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-amd64
             ${{ env.GHCR_REPO }}:latest-amd64
           cache-from: type=gha,scope=amd64
 
@@ -461,6 +464,7 @@ jobs:
               ${{ steps.meta.outputs.tags }}
               ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-arm64
               ${{ env.DOCKERHUB_REPO }}:latest-arm64
+              ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-arm64
               ${{ env.GHCR_REPO }}:latest-arm64
             cache-from: type=gha,scope=arm64
 
