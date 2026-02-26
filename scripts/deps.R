@@ -137,7 +137,6 @@ pegboard_ref <- Sys.getenv("PEGBOARD_REF", "main")
 use_latest <- isFALSE(as.logical(Sys.getenv("NO_LATEST", "FALSE")))
 
 message("Use latest workbench packages? [", use_latest, "]")
-
 if (use_latest) {
     install_latest_release("sandpaper")
     install_latest_release("varnish")
@@ -149,3 +148,8 @@ if (use_latest) {
     remotes::install_github("carpentries/pegboard", ref = pegboard_ref)
 }
 cat("::endgroup::\n")
+
+cat("::group::Install dovetail translation package\n")
+remotes::install_github("joelnitta/dovetail")
+cat("::endgroup::\n")
+
