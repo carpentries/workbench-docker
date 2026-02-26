@@ -76,6 +76,7 @@ RUN apt-get install -y \
     nano \
     gh \
     cmake \
+    rsync \
     && apt-get clean all \
     && apt-get purge \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
