@@ -95,7 +95,8 @@ RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) \
     && version=$(curl https://quarto.org/docs/download/_prerelease.json | jq -r '.version') \
     && bundle_deb="quarto-${version}-linux-${bundle_ext}" \
     && wget https://github.com/quarto-dev/quarto-cli/releases/download/v${version}/${bundle_deb} \
-    && apt -y install ./${bundle_deb}
+    && apt -y install ./${bundle_deb} \
+    && rm ./${bundle_deb}
 
 RUN echo "rstudio ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
 
