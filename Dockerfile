@@ -38,7 +38,7 @@ RUN (type -p wget >/dev/null || (apt install wget -y)) \
 	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 	&& cat $out | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
 	&& chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-	&&  mkdir -p -m 755 /etc/apt/sources.list.d \
+	&& mkdir -p -m 755 /etc/apt/sources.list.d \
 	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
 	&& apt update
 
@@ -81,12 +81,21 @@ RUN apt-get install -y \
     && apt-get purge \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# install aws cli v2
 RUN arch=$(arch) \
     && curl "https://awscli.amazonaws.com/awscli-exe-linux-${arch}.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip \
     && sudo ./aws/install \
     && rm -rf awscliv2.zip ./aws \
     && aws --version
+
+# install quarto
+RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) \
+    && bundle_ext="${arch}.deb" \
+    && version=$(curl https://quarto.org/docs/download/_prerelease.json | jq -r '.version') \
+    && bundle_deb="quarto-${version}-linux-${bundle_ext}" \
+    && wget https://github.com/quarto-dev/quarto-cli/releases/download/v${version}/${bundle_deb} \
+    && apt -y install ./${bundle_deb}
 
 RUN echo "rstudio ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
 
