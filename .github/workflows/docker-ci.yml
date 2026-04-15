@@ -78,7 +78,7 @@ jobs:
             ${{ env.DOCKERHUB_REPO }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build Image (AMD64)
         id: build_amd64
@@ -151,7 +151,7 @@ jobs:
             ${{ env.DOCKERHUB_REPO }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build Image (ARM64)
         id: build_arm64
@@ -361,7 +361,7 @@ jobs:
             ${{ env.DOCKERHUB_REPO }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Push version AMD64 image only
         if: ${{ inputs.no-latest }}
@@ -436,7 +436,7 @@ jobs:
               ${{ env.DOCKERHUB_REPO }}
 
         - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v3
+          uses: docker/setup-buildx-action@v4
 
         - name: Push version ARM64 image only
           if: ${{ inputs.no-latest }}
@@ -498,7 +498,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Docker metadata
         id: meta
@@ -553,7 +553,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Docker metadata
         id: meta
@@ -610,7 +610,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Docker metadata
         id: meta
