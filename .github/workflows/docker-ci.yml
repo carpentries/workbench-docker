@@ -5,6 +5,9 @@ on:
     branches:
       - main
       - release-*
+    paths-ignore:
+      - '.github/workflows/**.yml'
+      - '.github/dependabot.yml'
   release:
     types: [published]
   workflow_dispatch:
