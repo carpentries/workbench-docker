@@ -107,7 +107,7 @@ jobs:
           echo "IMAGE_DIGEST_AMD64=${digest#sha256:}" >> $GITHUB_ENV
 
       - name: Upload digest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: digests-amd64
           path: ${{ runner.temp }}/digests/*
@@ -115,7 +115,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Tarball as Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docker-amd64
           path: ${{ runner.temp }}/workbench-amd64.tar
@@ -180,7 +180,7 @@ jobs:
           echo "IMAGE_DIGEST_ARM64=${digest#sha256:}" >> $GITHUB_ENV
 
       - name: Upload digest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: digests-arm64
           path: ${{ runner.temp }}/digests/*
@@ -188,7 +188,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Tarball as Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docker-arm64
           path: ${{ runner.temp }}/workbench-arm64.tar
