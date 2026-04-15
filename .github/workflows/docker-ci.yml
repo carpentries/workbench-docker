@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Docker meta
         id: meta
@@ -141,7 +141,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Docker meta
         id: meta
@@ -240,7 +240,7 @@ jobs:
     steps:
       - name: Checkout Lesson
         if: "${{ matrix.lesson != '' }}"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ matrix.lesson }}
           path: lesson_tmp
@@ -303,7 +303,7 @@ jobs:
     steps:
       - name: Checkout Lesson
         if: "${{ matrix.lesson != '' }}"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ matrix.lesson }}
           path: lesson_tmp
