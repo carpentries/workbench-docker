@@ -82,7 +82,7 @@ jobs:
 
       - name: Build Image (AMD64)
         id: build_amd64
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64
           build-args: |
@@ -155,7 +155,7 @@ jobs:
 
       - name: Build Image (ARM64)
         id: build_arm64
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/arm64
           build-args: |
@@ -365,7 +365,7 @@ jobs:
 
       - name: Push version AMD64 image only
         if: ${{ inputs.no-latest }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64
           build-args: |
@@ -383,7 +383,7 @@ jobs:
 
       - name: Push AMD64 image
         if: ${{ github.event_name == 'release' && !inputs.no-latest }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64
           push: true
@@ -440,7 +440,7 @@ jobs:
 
         - name: Push version ARM64 image only
           if: ${{ inputs.no-latest }}
-          uses: docker/build-push-action@v6
+          uses: docker/build-push-action@v7
           with:
             platforms: linux/arm64
             build-args: |
@@ -458,7 +458,7 @@ jobs:
 
         - name: Push ARM64 image
           if: ${{ github.event_name == 'release' && !inputs.no-latest }}
-          uses: docker/build-push-action@v6
+          uses: docker/build-push-action@v7
           with:
             platforms: linux/arm64
             push: true
