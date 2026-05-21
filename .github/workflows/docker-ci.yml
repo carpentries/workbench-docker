@@ -16,6 +16,11 @@ on:
         description: 'Who triggered this build?'
         required: true
         default: 'Maintainer (via GitHub)'
+      r-version:
+        description: 'R version to build with (e.g. 4.5.3, 4.6, release, latest)'
+        required: false
+        default: 'latest'
+        type: string
       no-latest:
         description: 'Publish development image(s), i.e. no latest?'
         required: true
@@ -54,6 +59,7 @@ env:
   VARNISH_REF: ${{ vars.VARNISH_REF || inputs.varnish-ref || 'main' }}
   PEGBOARD_REF: ${{ vars.PEGBOARD_REF || inputs.pegboard-ref || 'main' }}
   NO_LATEST: ${{ vars.NO_LATEST || inputs.no-latest || 'false' }}
+  R_VERSION: ${{ vars.R_VERSION || inputs.r-version || 'latest' }}
 
 jobs:
   test-inputs:
@@ -90,6 +96,7 @@ jobs:
             VARNISH_REF=${{ env.VARNISH_REF }}
             PEGBOARD_REF=${{ env.PEGBOARD_REF }}
             NO_LATEST=${{ env.NO_LATEST }}
+            R_VERSION=${{ env.R_VERSION }}
           outputs: |
             type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
             type=docker,dest=${{ runner.temp }}/workbench-amd64.tar
@@ -163,6 +170,7 @@ jobs:
             VARNISH_REF=${{ env.VARNISH_REF }}
             PEGBOARD_REF=${{ env.PEGBOARD_REF }}
             NO_LATEST=${{ env.NO_LATEST }}
+            R_VERSION=${{ env.R_VERSION }}
           outputs: |
             type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
             type=docker,dest=${{ runner.temp }}/workbench-arm64.tar
@@ -222,12 +230,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lesson: [carpentries/instructor-training, swcarpentry/shell-novice]
+        lesson: [carpentries/instructor-training, swcarpentry/shell-novice, swcarpentry/r-novice-inflammation]
         include:
           - lesson: carpentries/instructor-training
             lesson-name: Instructor Training
           - lesson: swcarpentry/shell-novice
             lesson-name: Shell Novice
+          - lesson: swcarpentry/r-novice-inflammation
+            lesson-name: Programming with R
 
     name: ${{ matrix.lesson-name }}
     runs-on: ubuntu-latest
@@ -282,15 +292,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # lesson: [datacarpentry/ecology-workshop, carpentries/sandpaper-docs, datacarpentry/r-socialsci]
-        lesson: [datacarpentry/ecology-workshop, carpentries/sandpaper-docs]
+        lesson: [datacarpentry/ecology-workshop, carpentries/sandpaper-docs, datacarpentry/r-socialsci]
         include:
           - lesson: datacarpentry/ecology-workshop
             lesson-name: Ecology Workshop
           - lesson: carpentries/sandpaper-docs
             lesson-name: Workbench Documentation
-        #   - lesson: datacarpentry/r-socialsci
-        #     lesson-name: R for Social Scientists
+          - lesson: datacarpentry/r-socialsci
+            lesson-name: R for Social Scientists
 
     name: ${{ matrix.lesson-name }}
     runs-on: ubuntu-latest
@@ -373,6 +382,7 @@ jobs:
             VARNISH_REF=${{ env.VARNISH_REF }}
             PEGBOARD_REF=${{ env.PEGBOARD_REF }}
             NO_LATEST=${{ env.NO_LATEST }}
+            R_VERSION=${{ env.R_VERSION }}
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
@@ -448,6 +458,7 @@ jobs:
               VARNISH_REF=${{ env.VARNISH_REF }}
               PEGBOARD_REF=${{ env.PEGBOARD_REF }}
               NO_LATEST=${{ env.NO_LATEST }}
+              R_VERSION=${{ env.R_VERSION }}
             push: true
             labels: ${{ steps.meta.outputs.labels }}
             tags: |

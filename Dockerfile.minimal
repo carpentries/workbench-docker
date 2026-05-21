@@ -1,0 +1,67 @@
+ARG R_VERSION=latest
+FROM ghcr.io/r-hub/r-minimal/r-minimal:${R_VERSION}
+
+LABEL "source"="https://github.com/carpentries/workbench-docker/Dockerfile.minimal"
+LABEL "maintainer.name"="Robert Davey"
+LABEL "maintainer.email"="robertdavey@carpentries.org"
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN <<SYSDEPS
+    installr -c
+    installr -a "pandoc-cli aws-cli github-cli cmake rsync curl curl-dev linux-headers libxml2-dev fontconfig-dev harfbuzz-dev fribidi-dev freetype-dev tiff-dev jpeg-dev libgit2-dev libxslt-dev zlib-dev icu-dev openssl-dev libuv-dev libjpeg-turbo-dev libpng-dev nano cairo cairo-dev"
+SYSDEPS
+
+# add rstudio user, home directory, and add to sudo group
+RUN adduser -D rstudio && \
+    echo "rstudio:rstudio" | chpasswd && \
+    adduser rstudio wheel
+
+WORKDIR /home/rstudio
+
+# setup base renv for lessons that want to use it
+RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "gh", "yaml"), repos = c(CRAN = "https://cloud.r-project.org"))'
+
+RUN <<GIT
+    apk add git
+    git config --global --add safe.directory /home/rstudio
+GIT
+
+ARG SANDPAPER_REF
+ARG VARNISH_VER
+ARG PEGBOARD_REF
+
+# Convert ARG to ENV so they persist inside the container
+ENV SANDPAPER_REF=${SANDPAPER_REF}
+ENV VARNISH_REF=${VARNISH_REF}
+ENV PEGBOARD_REF=${PEGBOARD_REF}
+
+COPY .Renviron /home/rstudio/.Renviron
+RUN chown -R rstudio:rstudio /home/rstudio/.Renviron
+
+COPY scripts/* /home/rstudio/.workbench/
+RUN chmod +x /home/rstudio/.workbench/* && \
+    chown -R rstudio:rstudio /home/rstudio/.workbench && \
+    source /home/rstudio/.workbench/init_env.sh
+
+# install minimal dependencies only
+ARG MINIMAL
+ENV MINIMAL=${MINIMAL:-TRUE}
+RUN Rscript /home/rstudio/.workbench/deps.R
+
+# clean up
+RUN rm -rf /tmp/downloaded_packages
+
+COPY .env /home/rstudio/.env
+RUN chmod +rx /home/rstudio/.env && \
+    chown rstudio:rstudio /home/rstudio/.env
+
+COPY local_entrypoint.sh .
+RUN chmod +x local_entrypoint.sh && \
+    chown rstudio:rstudio local_entrypoint.sh
+
+COPY start.sh .
+RUN chmod +x start.sh && \
+    chown rstudio:rstudio start.sh
+
+ENTRYPOINT [ "/bin/sh", "--login" ]

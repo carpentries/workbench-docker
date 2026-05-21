@@ -1,5 +1,5 @@
-# use tidyverse image to get devtools etc
-FROM rocker/rstudio:latest
+ARG R_VERSION=latest
+FROM rocker/rstudio:${R_VERSION}
 
 LABEL "source"="https://github.com/carpentries/workbench-docker/Dockerfile"
 LABEL "maintainer.name"="Robert Davey"

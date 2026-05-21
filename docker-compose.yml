@@ -13,6 +13,22 @@ services:
     env_file:
       - .env
 
+  workbench-minimal:
+    container_name: carpentries-workbench-minimal
+    image: carpentries/workbench-docker:minimal
+    build:
+      context: .
+      dockerfile: Dockerfile.minimal
+      args:
+        SANDPAPER_REF: ${SANDPAPER_REF}
+        VARNISH_REF: ${VARNISH_REF}
+        PEGBOARD_REF: ${PEGBOARD_REF}
+        PANDOC_REF: ${PANDOC_REF}
+        NO_LATEST: ${NO_LATEST}
+    env_file:
+      - .env
+    tty: true
+
   workbench-local:
     image: carpentries/workbench-docker:${TAG:-latest}
     volumes:
