@@ -320,7 +320,7 @@ jobs:
           ls -lAh ${{ github.workspace }}/lesson_tmp
 
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: docker-amd64
           path: ${{ runner.temp }}
@@ -395,7 +395,7 @@ jobs:
           ls -lAh ${{ github.workspace }}/lesson_tmp
 
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: docker-amd64-minimal
           path: ${{ runner.temp }}
@@ -457,7 +457,7 @@ jobs:
           ls -lAh ${{ github.workspace }}/lesson_tmp
 
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: docker-amd64
           path: ${{ runner.temp }}
@@ -689,7 +689,7 @@ jobs:
       - publish-amd64
     steps:
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/digests
           pattern: digests-*
@@ -743,7 +743,7 @@ jobs:
       - publish-amd64-minimal
     steps:
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/digests
           pattern: digests-*
@@ -798,7 +798,7 @@ jobs:
       - publish-arm64
     steps:
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/digests
           pattern: digests-*
@@ -855,7 +855,7 @@ jobs:
       - publish-arm64
     steps:
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/digests
           pattern: digests-*
@@ -921,7 +921,7 @@ jobs:
       - publish-amd64-minimal
     steps:
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/digests
           pattern: digests-*
