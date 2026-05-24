@@ -9,7 +9,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN <<SYSDEPS
     installr -c
-    installr -a "pandoc-cli aws-cli github-cli cmake rsync curl curl-dev linux-headers libxml2-dev fontconfig-dev harfbuzz-dev fribidi-dev freetype-dev tiff-dev jpeg-dev libgit2-dev libxslt-dev zlib-dev icu-dev openssl-dev libuv-dev libjpeg-turbo-dev libpng-dev nano cairo cairo-dev svglite"
+    installr -a "bash pandoc-cli aws-cli github-cli cmake rsync curl curl-dev linux-headers libxml2-dev fontconfig-dev harfbuzz-dev fribidi-dev freetype-dev tiff-dev jpeg-dev libgit2-dev libxslt-dev zlib-dev icu-dev openssl-dev libuv-dev libjpeg-turbo-dev libpng-dev nano cairo cairo-dev svglite"
 SYSDEPS
 
 # add rstudio user, home directory, and add to sudo group
