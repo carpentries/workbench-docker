@@ -73,7 +73,7 @@ jobs:
   build-amd64:
     runs-on: ubuntu-latest
     outputs:
-      image-version: ${{ steps.meta.outputs.version }}
+      image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -133,7 +133,7 @@ jobs:
   build-amd64-minimal:
     runs-on: ubuntu-latest
     outputs:
-      image-version: ${{ steps.meta.outputs.version }}
+      image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -144,10 +144,8 @@ jobs:
         with:
           images: |
             ${{ env.DOCKERHUB_REPO }}
-          tags: |
-            type=match,pattern=release-(\d+\.\d+\.\d+),group=1,suffix=-minimal
-            type=match,pattern=(dev-\d+\.\d+\.\d+),group=1,suffix=-minimal
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }},suffix=-minimal
+          flavor: |
+            suffix=-minimal
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -214,7 +212,7 @@ jobs:
       )
     runs-on: ubuntu-24.04-arm
     outputs:
-      image-version: ${{ steps.meta.outputs.version }}
+      image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -346,7 +344,7 @@ jobs:
           -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.outputs.image-version }} \
+          ${{ needs.build-amd64.outputs.image-version }} \
           /bin/bash -c "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   push-test-minimal:
@@ -421,7 +419,7 @@ jobs:
           -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64-minimal.outputs.image-version }} \
+          ${{ needs.build-amd64-minimal.outputs.image-version }} \
           /bin/bash -c "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   publish-test:
@@ -483,7 +481,7 @@ jobs:
           -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.outputs.image-version }} \
+          ${{ needs.build-amd64.outputs.image-version }} \
           /bin/bash -c "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   publish-amd64:
@@ -576,6 +574,8 @@ jobs:
         with:
           images: |
             ${{ env.DOCKERHUB_REPO }}
+          flavor: |
+            suffix=-minimal
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -788,17 +788,19 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha
+          flavor: |
+            suffix=-minimal
 
       - name: Create AMD version manifest and push
         run: |
           docker buildx imagetools create \
-            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-minimal \
-            -t ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-minimal \
-            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-minimal-amd64
+            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
+            -t ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }} \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-minimal
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}
 
   merge-amd64-arm64-only:
     runs-on: ubuntu-latest
@@ -965,22 +967,24 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=semver,pattern=latest-minimal,enable={{is_default_branch}}
+            type=semver,pattern=latest,enable={{is_default_branch}}
             type=sha
+          flavor: |
+            suffix=-minimal
 
       - name: Create version manifest and push
         run: |
           docker buildx imagetools create \
-            -t ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-minimal \
-            ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-minimal-amd64
+            -t ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }} \
+            ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-amd64
 
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:latest-minimal \
             ${{ env.DOCKERHUB_REPO }}:latest-minimal-amd64
 
           docker buildx imagetools create \
-            -t ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-minimal \
-            ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-minimal-amd64
+            -t ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }} \
+            ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-amd64
 
           docker buildx imagetools create \
             -t ${{ env.GHCR_REPO }}:latest-minimal \
