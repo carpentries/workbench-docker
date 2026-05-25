@@ -350,7 +350,7 @@ jobs:
           -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ needs.build-amd64.outputs.image-version }} \
+          ${{ env.DOCKERHUB_REPO }} \
           "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   push-test-minimal:
@@ -488,7 +488,7 @@ jobs:
           -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ needs.build-amd64.outputs.image-version }} \
+          ${{ env.DOCKERHUB_REPO }} \
           "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   publish-amd64:
