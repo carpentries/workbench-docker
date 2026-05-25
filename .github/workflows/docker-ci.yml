@@ -136,7 +136,7 @@ jobs:
           retention-days: 1
 
   build-amd64-minimal:
-    if: ${{ inputs.build-minimal }}
+    if: inputs.build-minimal
     runs-on: ubuntu-latest
     outputs:
       image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
