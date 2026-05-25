@@ -72,6 +72,8 @@ jobs:
 
   build-amd64:
     runs-on: ubuntu-latest
+    outputs:
+      image-version: ${{ steps.meta.outputs.version }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -130,6 +132,8 @@ jobs:
 
   build-amd64-minimal:
     runs-on: ubuntu-latest
+    outputs:
+      image-version: ${{ steps.meta.outputs.version }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -140,6 +144,10 @@ jobs:
         with:
           images: |
             ${{ env.DOCKERHUB_REPO }}
+          tags: |
+            type=match,pattern=release-(\d+\.\d+\.\d+),group=1,suffix=-minimal
+            type=match,pattern=(dev-\d+\.\d+\.\d+),group=1,suffix=-minimal
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }},suffix=-minimal
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -160,7 +168,7 @@ jobs:
             type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
             type=docker,dest=${{ runner.temp }}/workbench-amd64-minimal.tar
           push: false
-          tags: ${{ env.DOCKERHUB_REPO }}
+          tags: ${{ steps.meta.outputs.tags }}
           cache-to: ${{ (((github.ref_name == 'main' && github.event_name == 'push') || github.event_name == 'release' || github.event_name == 'workflow_dispatch') && 'type=gha,mode=max,scope=amd64') || '' }}
           cache-from: type=gha,scope=amd64
 
@@ -205,6 +213,8 @@ jobs:
         )
       )
     runs-on: ubuntu-24.04-arm
+    outputs:
+      image-version: ${{ steps.meta.outputs.version }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -336,7 +346,7 @@ jobs:
           -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }} \
+          ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.outputs.image-version }} \
           /bin/bash -c "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   push-test-minimal:
@@ -411,7 +421,7 @@ jobs:
           -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }} \
+          ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64-minimal.outputs.image-version }} \
           /bin/bash -c "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   publish-test:
@@ -473,7 +483,7 @@ jobs:
           -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }} \
+          ${{ env.DOCKERHUB_REPO }}:${{ needs.build-amd64.outputs.image-version }} \
           /bin/bash -c "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   publish-amd64:
@@ -586,8 +596,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64-minimal
-            ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-amd64-minimal
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+            ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-amd64
           cache-from: type=gha,scope=amd64
 
       - name: Push minimal AMD64 image
@@ -600,10 +610,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64-minimal
-            ${{ env.DOCKERHUB_REPO }}:latest-amd64-minimal
-            ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-amd64-minimal
-            ${{ env.GHCR_REPO }}:latest-amd64-minimal
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+            ${{ env.DOCKERHUB_REPO }}:latest-minimal-amd64
+            ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-amd64
+            ${{ env.GHCR_REPO }}:latest-minimal-amd64
           cache-from: type=gha,scope=amd64
 
   publish-arm64:
@@ -784,7 +794,7 @@ jobs:
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-minimal \
             -t ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-minimal \
-            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64-minimal
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-minimal-amd64
 
       - name: Inspect image
         run: |
@@ -962,19 +972,19 @@ jobs:
         run: |
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-minimal \
-            ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-amd64-minimal
+            ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-minimal-amd64
 
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:latest-minimal \
-            ${{ env.DOCKERHUB_REPO }}:latest-amd64-minimal
+            ${{ env.DOCKERHUB_REPO }}:latest-minimal-amd64
 
           docker buildx imagetools create \
             -t ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-minimal \
-            ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-amd64-minimal
+            ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-minimal-amd64
 
           docker buildx imagetools create \
             -t ${{ env.GHCR_REPO }}:latest-minimal \
-            ${{ env.GHCR_REPO }}:latest-amd64-minimal
+            ${{ env.GHCR_REPO }}:latest-minimal-amd64
 
       - name: Inspect image
         run: |
