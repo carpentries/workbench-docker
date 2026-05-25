@@ -6,6 +6,9 @@ We currently provide two pre-built images:
 - linux/amd64
 - linux/arm64
 
+A minimal image based on alpine is currently in development:
+- linux/amd64-minimal
+
 ## Current Known Issues
 
 - Building images locally from scratch are likely not to work on Mac M* (M1, M2, etc), but should be fine on Mac Intel
