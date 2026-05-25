@@ -871,7 +871,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && !inputs.no-latest && github.repository == 'carpentries/workbench-docker'
     needs:
-      - publish-test
       - publish-amd64
       - publish-arm64
     steps:
