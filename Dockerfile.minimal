@@ -13,14 +13,16 @@ RUN <<SYSDEPS
 SYSDEPS
 
 # add rstudio user, home directory, and add to sudo group
-RUN adduser -D rstudio && \
-    echo "rstudio:rstudio" | chpasswd && \
+RUN <<ADDUSER
+    adduser -D rstudio
+    echo "rstudio:rstudio" | chpasswd
     adduser rstudio wheel
+ADDUSER
 
 WORKDIR /home/rstudio
 
 # setup base renv for lessons that want to use it
-RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "gh", "yaml", "svglite"), repos = c(CRAN = "https://cloud.r-project.org"))'
+RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "cffr", "gh", "yaml", "svglite"), repos = c(CRAN = "https://cloud.r-project.org"))'
 
 RUN <<GIT
     apk add git
@@ -28,44 +30,60 @@ RUN <<GIT
 GIT
 
 ARG SANDPAPER_REF
-ARG VARNISH_VER
+ARG VARNISH_REF
 ARG PEGBOARD_REF
+ARG NO_LATEST
 
 # Convert ARG to ENV so they persist inside the container
 ENV SANDPAPER_REF=${SANDPAPER_REF}
 ENV VARNISH_REF=${VARNISH_REF}
 ENV PEGBOARD_REF=${PEGBOARD_REF}
+ENV NO_LATEST=${NO_LATEST}
 
 COPY .Renviron /home/rstudio/.Renviron
-RUN chown -R rstudio:rstudio /home/rstudio/.Renviron
+RUN <<RENVR
+    chown -R rstudio:rstudio /home/rstudio/.Renviron
+RENVR
 
 COPY scripts/* /home/rstudio/.workbench/
-RUN chmod +x /home/rstudio/.workbench/* && \
-    chown -R rstudio:rstudio /home/rstudio/.workbench && \
+RUN <<INITENV
+    chmod +x /home/rstudio/.workbench/*
+    chown -R rstudio:rstudio /home/rstudio/.workbench
     source /home/rstudio/.workbench/init_env.sh
+INITENV
 
 # install minimal dependencies only
 ARG MINIMAL
 ENV MINIMAL=${MINIMAL:-TRUE}
-RUN Rscript /home/rstudio/.workbench/deps.R
+RUN <<DEPS
+    Rscript /home/rstudio/.workbench/deps.R
+DEPS
 
 # clean up
 RUN rm -rf /tmp/downloaded_packages
 
-RUN touch /home/rstudio/.Rprofile && \
-    echo "options(knitr.chunk.dev = 'svglite')" >> /home/rstudio/.Rprofile && \
+RUN <<RPROF
+    touch /home/rstudio/.Rprofile
+    echo "options(knitr.chunk.dev = 'svglite')" >> /home/rstudio/.Rprofile
     chown rstudio:rstudio /home/rstudio/.Rprofile
+RPROF
 
 COPY .env /home/rstudio/.env
-RUN chmod +rx /home/rstudio/.env && \
+RUN <<DOTENV
+    chmod +rx /home/rstudio/.env
     chown rstudio:rstudio /home/rstudio/.env
+DOTENV
 
 COPY local_entrypoint.sh .
-RUN chmod +x local_entrypoint.sh && \
+RUN <<LENTRY
+    chmod +x local_entrypoint.sh
     chown rstudio:rstudio local_entrypoint.sh
+LENTRY
 
 COPY start.sh .
-RUN chmod +x start.sh && \
+RUN <<START
+    chmod +x start.sh
     chown rstudio:rstudio start.sh
+START
 
 ENTRYPOINT [ "/bin/sh", "--login" ]
