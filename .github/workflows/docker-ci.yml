@@ -31,6 +31,11 @@ on:
         required: false
         default: false
         type: boolean
+      build-minimal:
+        description: 'Build minimal image?'
+        required: false
+        default: false
+        type: boolean
       run-tests:
         description: 'Run Tests'
         required: false
@@ -72,6 +77,8 @@ jobs:
 
   build-amd64:
     runs-on: ubuntu-latest
+    outputs:
+      image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -129,7 +136,10 @@ jobs:
           retention-days: 1
 
   build-amd64-minimal:
+    if: inputs.build-minimal
     runs-on: ubuntu-latest
+    outputs:
+      image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -140,6 +150,8 @@ jobs:
         with:
           images: |
             ${{ env.DOCKERHUB_REPO }}
+          flavor: |
+            suffix=-minimal
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -160,7 +172,7 @@ jobs:
             type=image,"name=${{ env.DOCKERHUB_REPO }}",name-canonical=true
             type=docker,dest=${{ runner.temp }}/workbench-amd64-minimal.tar
           push: false
-          tags: ${{ env.DOCKERHUB_REPO }}
+          tags: ${{ steps.meta.outputs.tags }}
           cache-to: ${{ (((github.ref_name == 'main' && github.event_name == 'push') || github.event_name == 'release' || github.event_name == 'workflow_dispatch') && 'type=gha,mode=max,scope=amd64') || '' }}
           cache-from: type=gha,scope=amd64
 
@@ -205,6 +217,8 @@ jobs:
         )
       )
     runs-on: ubuntu-24.04-arm
+    outputs:
+      image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -337,10 +351,11 @@ jobs:
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }} \
-          /bin/bash -c "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
+          "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   push-test-minimal:
     if: |
+      inputs.build-minimal &&
       github.repository == 'carpentries/workbench-docker' &&
       (
         github.event_name == 'release' ||
@@ -411,8 +426,8 @@ jobs:
           -e GITHUB_PAT=$GITHUB_PAT \
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
-          ${{ env.DOCKERHUB_REPO }} \
-          /bin/bash -c "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
+          ${{ needs.build-amd64-minimal.outputs.image-version }} \
+          "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   publish-test:
     if: github.event_name == 'release' && github.repository == 'carpentries/workbench-docker'
@@ -474,7 +489,7 @@ jobs:
           -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }} \
-          /bin/bash -c "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
+          "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
   publish-amd64:
     if: github.repository == 'carpentries/workbench-docker'
@@ -541,7 +556,9 @@ jobs:
           cache-from: type=gha,scope=amd64
 
   publish-amd64-minimal:
-    if: github.repository == 'carpentries/workbench-docker'
+    if: |
+      inputs.build-minimal &&
+      github.repository == 'carpentries/workbench-docker'
     needs:
       - build-amd64-minimal
       - push-test-minimal
@@ -566,6 +583,8 @@ jobs:
         with:
           images: |
             ${{ env.DOCKERHUB_REPO }}
+          flavor: |
+            suffix=-minimal
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -586,8 +605,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64-minimal
-            ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-amd64-minimal
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+            ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-amd64
           cache-from: type=gha,scope=amd64
 
       - name: Push minimal AMD64 image
@@ -600,10 +619,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64-minimal
-            ${{ env.DOCKERHUB_REPO }}:latest-amd64-minimal
-            ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-amd64-minimal
-            ${{ env.GHCR_REPO }}:latest-amd64-minimal
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
+            ${{ env.DOCKERHUB_REPO }}:latest-minimal-amd64
+            ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-amd64
+            ${{ env.GHCR_REPO }}:latest-minimal-amd64
           cache-from: type=gha,scope=amd64
 
   publish-arm64:
@@ -738,7 +757,7 @@ jobs:
 
   merge-amd64-minimal-only:
     runs-on: ubuntu-latest
-    if: inputs.no-latest && !inputs.build-arm && github.repository == 'carpentries/workbench-docker'
+    if: inputs.build-minimal && inputs.no-latest && !inputs.build-arm && github.repository == 'carpentries/workbench-docker'
     needs:
       - publish-amd64-minimal
     steps:
@@ -778,17 +797,19 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha
+          flavor: |
+            suffix=-minimal
 
       - name: Create AMD version manifest and push
         run: |
           docker buildx imagetools create \
-            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-minimal \
-            -t ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}-minimal \
-            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64-minimal
+            -t ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }} \
+            -t ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }} \
+            ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-amd64
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}-minimal
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}
 
   merge-amd64-arm64-only:
     runs-on: ubuntu-latest
@@ -916,7 +937,7 @@ jobs:
 
   merge-minimal:
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && !inputs.no-latest && github.repository == 'carpentries/workbench-docker'
+    if: inputs.build-minimal && github.event_name == 'release' && !inputs.no-latest && github.repository == 'carpentries/workbench-docker'
     needs:
       - publish-amd64-minimal
     steps:
@@ -955,26 +976,28 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=semver,pattern=latest-minimal,enable={{is_default_branch}}
+            type=semver,pattern=latest,enable={{is_default_branch}}
             type=sha
+          flavor: |
+            suffix=-minimal
 
       - name: Create version manifest and push
         run: |
           docker buildx imagetools create \
-            -t ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-minimal \
-            ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-amd64-minimal
+            -t ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }} \
+            ${{ env.DOCKERHUB_REPO }}:v${{ steps.meta.outputs.version }}-amd64
 
           docker buildx imagetools create \
             -t ${{ env.DOCKERHUB_REPO }}:latest-minimal \
-            ${{ env.DOCKERHUB_REPO }}:latest-amd64-minimal
+            ${{ env.DOCKERHUB_REPO }}:latest-minimal-amd64
 
           docker buildx imagetools create \
-            -t ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-minimal \
-            ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-amd64-minimal
+            -t ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }} \
+            ${{ env.GHCR_REPO }}:v${{ steps.meta.outputs.version }}-amd64
 
           docker buildx imagetools create \
             -t ${{ env.GHCR_REPO }}:latest-minimal \
-            ${{ env.GHCR_REPO }}:latest-amd64-minimal
+            ${{ env.GHCR_REPO }}:latest-minimal-amd64
 
       - name: Inspect image
         run: |

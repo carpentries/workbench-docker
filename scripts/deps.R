@@ -1,6 +1,20 @@
 library(remotes)
 library(httr)
 
+detect_linux_distro <- function() {
+    if (Sys.info()[["sysname"]] == "Linux") {
+        os_release <- readLines("/etc/os-release")
+        distro <- sub("ID=(.*)$", "\\1", os_release[grepl("^ID=", os_release)])
+        release <- sub("VERSION_ID=(.*)$", "\\1", os_release[grepl("^VERSION_ID=", os_release)])
+        codename <- ""
+        if (distro == "ubuntu") {
+            codename <- sub("UBUNTU_CODENAME=(.*)$", "\\1", os_release[grepl("^UBUNTU_CODENAME=", os_release)])
+        }
+        return(list(distro = distro, version = release, codename = codename))
+    }
+    return(NULL)
+}
+
 install_latest_release <- function(pkg) {
   api_url <- paste0("https://api.github.com/repos/carpentries/", pkg, "/releases/latest")
   resp <- httr::GET(api_url)
@@ -24,11 +38,22 @@ options(HTTPUserAgent = sprintf("R/%s R (%s)", RV, OS))
 cat("::group::Register Repositories\n")
 on_linux <- Sys.info()[["sysname"]] == "Linux"
 if (on_linux) {
+    release <- detect_linux_distro()
     if (Sys.getenv("RSPM") == "") {
-        release <- system("lsb_release -c | awk '{print $2}'", intern = TRUE)
-        Sys.setenv("RSPM" =
-            paste0("https://packagemanager.posit.co/all/__linux__/", release, "/latest")
-        )
+        if (!is.null(release)) {
+            distro <- release$distro
+            version <- release$version
+            if (distro == "ubuntu") {
+                codename <- release$codename
+                Sys.setenv("RSPM" =
+                    paste0("https://packagemanager.posit.co/all/__linux__/", codename, "/latest")
+                )
+            } else if (distro == "alpine") {
+                Sys.setenv("RSPM" =
+                    paste0("https://packagemanager.posit.co/cran/latest")
+                )
+            }
+        }
     }
 }
 
