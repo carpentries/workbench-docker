@@ -1,3 +1,5 @@
+readRenviron("/home/rstudio/.Renviron")
+
 source("/home/rstudio/.workbench/setup_lesson_deps.R")
 source("/home/rstudio/.workbench/fortify_renv_cache.R")
 
