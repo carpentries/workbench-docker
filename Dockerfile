@@ -111,7 +111,14 @@ AWSCLI
 RUN echo "rstudio ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
 
 # setup base renv for lessons that want to use it
-RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "cffr", "gh", "yaml"), repos = c(CRAN = "https://cloud.r-project.org"))'
+RUN --mount=type=secret,id=github_token <<BASE
+    if grep -qE '^\s*GITHUB_PAT\s*=' /home/rstudio/.Renviron 2>/dev/null; then
+        echo "GITHUB_PAT already defined in .Renviron, skipping CI secret"
+    else
+        export GITHUB_PAT=$(cat /run/secrets/github_token)
+    fi
+    R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "cffr", "gh", "yaml"), repos = c(CRAN = "https://cloud.r-project.org"))'
+BASE
 
 # enable build args
 ARG SANDPAPER_REF
@@ -126,7 +133,12 @@ ENV PEGBOARD_REF=${PEGBOARD_REF}
 ENV NO_LATEST=${NO_LATEST}
 
 # install dependencies and workbench packages
-RUN <<DEPS
+RUN --mount=type=secret,id=github_token <<DEPS
+    if grep -qE '^\s*GITHUB_PAT\s*=' /home/rstudio/.Renviron 2>/dev/null; then
+        echo "GITHUB_PAT already defined in .Renviron, skipping CI secret"
+    else
+        export GITHUB_PAT=$(cat /run/secrets/github_token)
+    fi
     Rscript /home/rstudio/.workbench/deps.R
 DEPS
 

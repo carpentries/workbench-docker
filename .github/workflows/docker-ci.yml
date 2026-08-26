@@ -65,6 +65,8 @@ env:
   PEGBOARD_REF: ${{ vars.PEGBOARD_REF || inputs.pegboard-ref || 'main' }}
   NO_LATEST: ${{ vars.NO_LATEST || inputs.no-latest || 'false' }}
   R_VERSION: ${{ vars.R_VERSION || inputs.r-version || 'latest' }}
+  GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   test-inputs:
@@ -98,6 +100,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
+          secrets: |
+            github_token=${{ secrets.GITHUB_TOKEN }}
           build-args: |
             SANDPAPER_REF=${{ env.SANDPAPER_REF }}
             VARNISH_REF=${{ env.VARNISH_REF }}
@@ -161,6 +165,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
+          secrets: |
+            github_token=${{ secrets.GITHUB_TOKEN }}
           file: Dockerfile.minimal
           build-args: |
             SANDPAPER_REF=${{ env.SANDPAPER_REF }}
@@ -238,6 +244,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/arm64
+          secrets: |
+            github_token=${{ secrets.GITHUB_TOKEN }}
           build-args: |
             SANDPAPER_REF=${{ env.SANDPAPER_REF }}
             VARNISH_REF=${{ env.VARNISH_REF }}
@@ -526,6 +534,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
+          secrets: |
+            github_token=${{ secrets.GITHUB_TOKEN }}
           build-args: |
             SANDPAPER_REF=${{ env.SANDPAPER_REF }}
             VARNISH_REF=${{ env.VARNISH_REF }}
@@ -545,6 +555,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
+          secrets: |
+            github_token=${{ secrets.GITHUB_TOKEN }}
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
@@ -594,6 +606,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
+          secrets: |
+            github_token=${{ secrets.GITHUB_TOKEN }}
           file: Dockerfile.minimal
           build-args: |
             SANDPAPER_REF=${{ env.SANDPAPER_REF }}
@@ -614,6 +628,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
+          secrets: |
+            github_token=${{ secrets.GITHUB_TOKEN }}
           file: Dockerfile.minimal
           push: true
           labels: ${{ steps.meta.outputs.labels }}
@@ -672,6 +688,8 @@ jobs:
           uses: docker/build-push-action@v6
           with:
             platforms: linux/arm64
+            secrets: |
+              github_token=${{ secrets.GITHUB_TOKEN }}
             build-args: |
               SANDPAPER_REF=${{ env.SANDPAPER_REF }}
               VARNISH_REF=${{ env.VARNISH_REF }}
@@ -691,6 +709,8 @@ jobs:
           uses: docker/build-push-action@v6
           with:
             platforms: linux/arm64
+            secrets: |
+              github_token=${{ secrets.GITHUB_TOKEN }}
             push: true
             labels: ${{ steps.meta.outputs.labels }}
             tags: |
