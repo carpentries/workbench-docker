@@ -83,7 +83,7 @@ jobs:
       image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Docker meta
         id: meta
@@ -146,7 +146,7 @@ jobs:
       image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Docker meta
         id: meta
@@ -227,7 +227,7 @@ jobs:
       image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Docker meta
         id: meta
@@ -331,7 +331,7 @@ jobs:
     steps:
       - name: Checkout Lesson
         if: "${{ matrix.lesson != '' }}"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ matrix.lesson }}
           path: lesson_tmp
@@ -407,7 +407,7 @@ jobs:
     steps:
       - name: Checkout Lesson
         if: "${{ matrix.lesson != '' }}"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ matrix.lesson }}
           path: lesson_tmp
@@ -469,7 +469,7 @@ jobs:
     steps:
       - name: Checkout Lesson
         if: "${{ matrix.lesson != '' }}"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ matrix.lesson }}
           path: lesson_tmp
