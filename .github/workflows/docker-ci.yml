@@ -97,7 +97,7 @@ jobs:
 
       - name: Build Image (AMD64)
         id: build_amd64
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64
           secrets: |
@@ -162,7 +162,7 @@ jobs:
 
       - name: Build Image (AMD64)
         id: build_amd64_minimal
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64
           secrets: |
@@ -241,7 +241,7 @@ jobs:
 
       - name: Build Image (ARM64)
         id: build_arm64
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/arm64
           secrets: |
@@ -531,7 +531,7 @@ jobs:
 
       - name: Push version AMD64 image only
         if: ${{ inputs.no-latest }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64
           secrets: |
@@ -552,7 +552,7 @@ jobs:
 
       - name: Push AMD64 image
         if: ${{ github.event_name == 'release' && !inputs.no-latest }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64
           secrets: |
@@ -603,7 +603,7 @@ jobs:
 
       - name: Push version minimal AMD64 image only
         if: ${{ inputs.no-latest }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64
           secrets: |
@@ -625,7 +625,7 @@ jobs:
 
       - name: Push minimal AMD64 image
         if: ${{ github.event_name == 'release' && !inputs.no-latest }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64
           secrets: |
@@ -685,7 +685,7 @@ jobs:
 
         - name: Push version ARM64 image only
           if: ${{ inputs.no-latest }}
-          uses: docker/build-push-action@v6
+          uses: docker/build-push-action@v7
           with:
             platforms: linux/arm64
             secrets: |
@@ -706,7 +706,7 @@ jobs:
 
         - name: Push ARM64 image
           if: ${{ github.event_name == 'release' && !inputs.no-latest }}
-          uses: docker/build-push-action@v6
+          uses: docker/build-push-action@v7
           with:
             platforms: linux/arm64
             secrets: |
