@@ -9,11 +9,22 @@ We currently provide two pre-built images:
 A minimal image based on alpine is currently in development:
 - linux/amd64-minimal
 
+
+## Included Packages
+
+Version 0.2.8:
+
+- sandpaper : v0.21.1
+- varnish   : v1.1.3
+- pegboard  : v0.7.9
+
+
 ## Current Known Issues
 
 - Building images locally from scratch are likely not to work on Mac M* (M1, M2, etc), but should be fine on Mac Intel
 - The container currently runs as root, so any files written to a mounted lesson volume will be owned on the host by root.
   This can be avoided by using named volumes, documented below.
+
 
 ## Prerequisites
 
@@ -24,6 +35,7 @@ These instructions assume:
 1. Install Docker Desktop for [your operating system](https://docs.docker.com/compose/install/)
 2. Open a terminal
 3. Then:
+
 
 ## Quick Starts
 
@@ -272,6 +284,7 @@ To use a folder on your local host system as the lesson content, please read bel
 
 Once a container is removed, you can start up a new fresh container from the same workbench docker image by following the first steps of this readme.
 
+
 ## Building Workbench lessons
 
 There are two ways to access lessons within the Workbench docker container:
@@ -426,6 +439,7 @@ library(sandpaper)
 sandpaper::serve("/home/rstudio/lessons/shell-novice")
 ```
 
+
 ## Building the images yourself
 
 If an existing workbench container is already running, go to the `workbench-docker` folder and run `docker compose down`.
@@ -483,6 +497,7 @@ It will also start a RStudio server inside the container that is accessible on y
 
 Your lesson will be available under the `/home/rstudio/lessons/<lesson-name>` folder inside the container, e.g. `/home/rstudio/lessons/shell-novice`
 
+
 ## Rebuilding the image
 
 To rebuild the image:
@@ -492,6 +507,7 @@ cd ~/workbench/workbench-docker
 docker compose down
 docker compose up --build -d workbench
 ```
+
 
 ## Removing previous containers
 
@@ -504,6 +520,7 @@ To remove an existing container, use `docker rm <container_name>`.
 You can also use the Docker Desktop app to start, stop and delete containers, images and builds.
 
 Please check the relevant [Docker Desktop documentation](https://docs.docker.com/desktop/).
+
 
 ## Adding extra dependencies
 
@@ -545,6 +562,7 @@ setwd("~/lessons/your_lesson")
 
 sandpaper::manage_deps()
 ```
+
 
 ## Using Git within the container
 
@@ -599,6 +617,7 @@ docker run -it \
 carpentries/workbench-docker:latest \
 /home/rstudio/start.sh
 ```
+
 
 ## Getting help
 
