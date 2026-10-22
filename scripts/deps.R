@@ -96,6 +96,7 @@ if (isFALSE(as.logical(minimal_deps))) {
         "highr",
         "htmltools",
         "htmlwidgets",
+        "hunspell",
         "inline",
         "jquerylib",
         "jsonlite",

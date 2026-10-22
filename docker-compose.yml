@@ -12,10 +12,12 @@ services:
         NO_LATEST: ${NO_LATEST}
     env_file:
       - .env
+    ports:
+      - "4321:4321"
 
   workbench-minimal:
     container_name: carpentries-workbench-minimal
-    image: carpentries/workbench-docker:minimal
+    image: carpentries/workbench-docker:${TAG:-latest}-minimal
     build:
       context: .
       dockerfile: Dockerfile.minimal
@@ -27,6 +29,8 @@ services:
         NO_LATEST: ${NO_LATEST}
     env_file:
       - .env
+    ports:
+      - "4321:4321"
     tty: true
 
   workbench-local:
@@ -40,6 +44,7 @@ services:
       - .env
     ports:
       - "8787:8787"
+      - "4321:4321"
     entrypoint: ["/home/rstudio/local_entrypoint.sh"]
 
   workbench-ci:

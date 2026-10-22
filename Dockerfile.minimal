@@ -34,6 +34,10 @@ ARG VARNISH_REF
 ARG PEGBOARD_REF
 ARG NO_LATEST
 
+# Headless containers do not have a GUI browser; set a no-op browser so
+# packages like servr/httr can still start local servers without failing.
+ENV BROWSER=/bin/true
+
 # Convert ARG to ENV so they persist inside the container
 ENV SANDPAPER_REF=${SANDPAPER_REF}
 ENV VARNISH_REF=${VARNISH_REF}
@@ -64,6 +68,8 @@ RUN rm -rf /tmp/downloaded_packages
 
 RUN <<RPROF
     touch /home/rstudio/.Rprofile
+    echo "Sys.setenv(BROWSER = '/bin/true')" >> /home/rstudio/.Rprofile
+    echo "options(browser = '/bin/true')" >> /home/rstudio/.Rprofile
     echo "options(knitr.chunk.dev = 'svglite')" >> /home/rstudio/.Rprofile
     chown rstudio:rstudio /home/rstudio/.Rprofile
 RPROF

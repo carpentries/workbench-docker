@@ -140,7 +140,22 @@ jobs:
           retention-days: 1
 
   build-amd64-minimal:
-    if: inputs.build-minimal
+    if: |
+      (
+        github.repository == 'carpentries/workbench-docker' &&
+        (
+          github.event_name == 'release' ||
+          (
+            github.event_name == 'push' &&
+            startsWith(github.ref_name, 'release-')
+          ) ||
+          (
+            github.event_name == 'workflow_dispatch' &&
+            startsWith(github.ref_name, 'dev-') &&
+            inputs.build-minimal
+          )
+        )
+      )
     runs-on: ubuntu-latest
     outputs:
       image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
@@ -569,8 +584,18 @@ jobs:
 
   publish-amd64-minimal:
     if: |
-      inputs.build-minimal &&
-      github.repository == 'carpentries/workbench-docker'
+      github.repository == 'carpentries/workbench-docker' &&
+      (
+        github.event_name == 'release' ||
+        (
+          github.event_name == 'workflow_dispatch' &&
+          (
+            startsWith(github.ref_name, 'dev-') &&
+            inputs.no-latest &&
+            inputs.build-minimal
+          )
+        )
+      )
     needs:
       - build-amd64-minimal
       - push-test-minimal
@@ -956,7 +981,7 @@ jobs:
 
   merge-minimal:
     runs-on: ubuntu-latest
-    if: inputs.build-minimal && github.event_name == 'release' && !inputs.no-latest && github.repository == 'carpentries/workbench-docker'
+    if: github.event_name == 'release' && !inputs.no-latest && github.repository == 'carpentries/workbench-docker'
     needs:
       - publish-amd64-minimal
     steps:
