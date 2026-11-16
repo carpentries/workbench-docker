@@ -14,4 +14,4 @@ if [ "$WORKBENCH_PROFILE" == "local" ]; then
 fi
 
 # Start the usual container workflow
- /init
+/init &

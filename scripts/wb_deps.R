@@ -1,0 +1,50 @@
+library(remotes)
+library(httr)
+
+install_latest_release <- function(pkg) {
+  api_url <- paste0("https://api.github.com/repos/carpentries/", pkg, "/releases/latest")
+  resp <- httr::GET(api_url)
+
+  if (status_code(resp) == 200) {
+    tag <- content(resp, as = "parsed", type = "application/json")$tag_name
+    message("Installing ", pkg, " from GitHub @", tag)
+    renv::install(paste0("carpentries/", pkg, "@", tag))
+  } else {
+    message("Failed to get GitHub release tag for ", pkg)
+    message("Falling back to install.packages()")
+    install.packages(pkg)
+  }
+}
+
+cat("::group::Install Workbench package dependencies\n")
+sand_deps <- remotes::package_deps("sandpaper")
+varn_deps <- remotes::package_deps("varnish")
+sess_deps <- remotes::package_deps("sessioninfo")
+with_deps <- remotes::package_deps("withr")
+pkgs      <- rbind(sand_deps, varn_deps, sess_deps, with_deps)
+print(pkgs)
+update(pkgs, upgrade = "always")
+cat("::endgroup::\n")
+
+cat("::group::Install Workbench packages\n")
+sandpaper_ref <- Sys.getenv("SANDPAPER_REF", "main")
+varnish_ref <- Sys.getenv("VARNISH_REF", "main")
+pegboard_ref <- Sys.getenv("PEGBOARD_REF", "main")
+use_latest <- isFALSE(as.logical(Sys.getenv("NO_LATEST", "FALSE")))
+
+message("Use latest workbench packages? [", use_latest, "]")
+if (use_latest) {
+    install_latest_release("sandpaper")
+    install_latest_release("varnish")
+    install_latest_release("pegboard")
+} else {
+    message("Installing sandpaper (", sandpaper_ref, "), varnish (", varnish_ref, "), and pegboard (", pegboard_ref, ")")
+    remotes::install_github("carpentries/sandpaper", ref = sandpaper_ref)
+    remotes::install_github("carpentries/varnish", ref = varnish_ref)
+    remotes::install_github("carpentries/pegboard", ref = pegboard_ref)
+}
+cat("::endgroup::\n")
+
+cat("::group::Install dovetail translation package\n")
+remotes::install_github("joelnitta/dovetail")
+cat("::endgroup::\n")

@@ -7,6 +7,8 @@ LABEL "maintainer.email"="robertdavey@carpentries.org"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
 WORKDIR /home/rstudio
 
 # copy over all scripts
@@ -92,7 +94,10 @@ RUN <<APTGET
     nano \
     gh \
     cmake \
-    rsync
+    rsync \
+    wget \
+    bzip2 \
+    ca-certificates
 
     apt-get clean all
     apt-get purge
@@ -108,6 +113,34 @@ RUN <<AWSCLI
     aws --version
 AWSCLI
 
+ENV CONDA_DIR=/opt/conda
+ENV PATH=${CONDA_DIR}/bin:${PATH}
+ENV MINIFORGE_VERSION="${MINIFORGE_VERSION:-26.9.4-1}"
+ENV MINIFORGE_NAME="${MINIFORGE_NAME:-Miniforge3}"
+
+# taken from the conda-forge miniforge installation instructions
+RUN <<CONDA
+    wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/${MINIFORGE_NAME}-${MINIFORGE_VERSION}-Linux-$(uname -m).sh -O /tmp/miniforge.sh && \
+    /bin/bash /tmp/miniforge.sh -b -p ${CONDA_DIR} && \
+    rm /tmp/miniforge.sh && \
+    conda clean --tarballs --index-cache --packages --yes && \
+    find ${CONDA_DIR} -follow -type f -name '*.a' -delete && \
+    find ${CONDA_DIR} -follow -type f -name '*.pyc' -delete && \
+    conda clean --force-pkgs-dirs --all --yes  && \
+    echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> /etc/skel/.bashrc && \
+    echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> ~/.bashrc
+CONDA
+
+ENV QUARTO_VERSION="${QUARTO_VERSION:-1.10.19}"
+
+# install quarto
+# e.g. https://github.com/quarto-dev/quarto-cli/releases/download/v1.10.19/quarto-1.10.19-linux-amd64.deb
+RUN <<QUARTO
+    wget --no-hsts --quiet https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb -O /tmp/quarto.deb && \
+    sudo dpkg -i /tmp/quarto.deb && \
+    rm /tmp/quarto.deb
+QUARTO
+
 RUN echo "rstudio ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
 
 # setup base renv for lessons that want to use it
@@ -117,7 +150,7 @@ RUN --mount=type=secret,id=github_token <<BASE
     else
         export GITHUB_PAT=$(cat /run/secrets/github_token)
     fi
-    R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "cffr", "gh", "yaml"), repos = c(CRAN = "https://cloud.r-project.org"))'
+    R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "cffr", "gh", "yaml", "quarto"), repos = c(CRAN = "https://cloud.r-project.org"))'
 BASE
 
 # enable build args
@@ -141,6 +174,15 @@ RUN --mount=type=secret,id=github_token <<DEPS
     fi
     Rscript /home/rstudio/.workbench/deps.R
 DEPS
+
+RUN  --mount=type=secret,id=github_token <<WBDEPS
+    if grep -qE '^\s*GITHUB_PAT\s*=' /home/rstudio/.Renviron 2>/dev/null; then
+        echo "GITHUB_PAT already defined in .Renviron, skipping CI secret"
+    else
+        export GITHUB_PAT=$(cat /run/secrets/github_token)
+    fi
+    Rscript /home/rstudio/.workbench/wb_deps.R
+WBDEPS
 
 # clean up
 RUN rm -rf /tmp/downloaded_packages

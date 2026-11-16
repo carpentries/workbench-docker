@@ -21,8 +21,17 @@ ADDUSER
 
 WORKDIR /home/rstudio
 
+# Install quarto CLI - use static binary instead of .deb (adjust URL if needed)
+RUN <<QUARTO
+    QUARTO_VERSION="${QUARTO_VERSION:-1.10.19}"
+    curl -LO -k "https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.tar.gz"
+    tar -C /opt -xvzf "quarto-${QUARTO_VERSION}-linux-amd64.tar.gz"
+    ln -s "/opt/quarto-${QUARTO_VERSION}/bin/quarto" /usr/local/bin/quarto
+    rm -rf "quarto-${QUARTO_VERSION}-linux-amd64.tar.gz"
+QUARTO
+
 # setup base renv for lessons that want to use it
-RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "cffr", "gh", "yaml", "svglite"), repos = c(CRAN = "https://cloud.r-project.org"))'
+RUN R -e 'install.packages(c("renv", "remotes", "httpuv", "httr", "cffr", "gh", "yaml", "svglite", "quarto"), repos = c(CRAN = "https://cloud.r-project.org"))'
 
 RUN <<GIT
     apk add git
@@ -33,6 +42,10 @@ ARG SANDPAPER_REF
 ARG VARNISH_REF
 ARG PEGBOARD_REF
 ARG NO_LATEST
+
+# Headless containers do not have a GUI browser; set a no-op browser so
+# packages like servr/httr can still start local servers without failing.
+ENV BROWSER=/bin/true
 
 # Convert ARG to ENV so they persist inside the container
 ENV SANDPAPER_REF=${SANDPAPER_REF}
@@ -59,11 +72,22 @@ RUN <<DEPS
     Rscript /home/rstudio/.workbench/deps.R
 DEPS
 
+RUN  --mount=type=secret,id=github_token <<WBDEPS
+    if grep -qE '^\s*GITHUB_PAT\s*=' /home/rstudio/.Renviron 2>/dev/null; then
+        echo "GITHUB_PAT already defined in .Renviron, skipping CI secret"
+    else
+        export GITHUB_PAT=$(cat /run/secrets/github_token)
+    fi
+    Rscript /home/rstudio/.workbench/wb_deps.R
+WBDEPS
+
 # clean up
 RUN rm -rf /tmp/downloaded_packages
 
 RUN <<RPROF
     touch /home/rstudio/.Rprofile
+    echo "Sys.setenv(BROWSER = '/bin/true')" >> /home/rstudio/.Rprofile
+    echo "options(browser = '/bin/true')" >> /home/rstudio/.Rprofile
     echo "options(knitr.chunk.dev = 'svglite')" >> /home/rstudio/.Rprofile
     chown rstudio:rstudio /home/rstudio/.Rprofile
 RPROF
