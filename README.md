@@ -2,11 +2,11 @@
 
 A dockerised image of the Workbench dependencies required to build and serve lessons.
 
-We currently provide two pre-built images:
+We currently provide two pre-built full Ubuntu images, including RStudio:
 - linux/amd64
 - linux/arm64
 
-A minimal image based on alpine is currently in development:
+A minimal image based on Alpine is also available:
 - linux/amd64-minimal
 
 ## Current Known Issues
