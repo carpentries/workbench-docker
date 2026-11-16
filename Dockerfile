@@ -131,12 +131,13 @@ RUN <<CONDA
     echo ". ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base" >> ~/.bashrc
 CONDA
 
-ENV QUARTO_VERSION="${QUARTO_VERSION:-1.10.19}"
+ENV QUARTO_VERSION="${QUARTO_VERSION:-1.11.9}"
 
 # install quarto
-# e.g. https://github.com/quarto-dev/quarto-cli/releases/download/v1.10.19/quarto-1.10.19-linux-amd64.deb
+# e.g. https://github.com/quarto-dev/quarto-cli/releases/download/v1.11.9/quarto-1.11.9-linux-amd64.deb
 RUN <<QUARTO
-    wget --no-hsts --quiet https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb -O /tmp/quarto.deb && \
+    arch=$(dpkg --print-architecture)
+    wget --no-hsts --quiet https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-${arch}.deb -O /tmp/quarto.deb && \
     sudo dpkg -i /tmp/quarto.deb && \
     rm /tmp/quarto.deb
 QUARTO
