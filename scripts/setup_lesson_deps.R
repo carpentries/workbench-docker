@@ -7,7 +7,7 @@ if (has_lock) {
 
     detect_linux_distro <- function() {
         if (Sys.info()[["sysname"]] == "Linux") {
-            os_release <- readLines("/etc/os-release")
+            os_release <- gsub('"', '', readLines("/etc/os-release"))
             distro <- sub("ID=(.*)$", "\\1", os_release[grepl("^ID=", os_release)])
             release <- sub("VERSION_ID=(.*)$", "\\1", os_release[grepl("^VERSION_ID=", os_release)])
             codename <- ""
