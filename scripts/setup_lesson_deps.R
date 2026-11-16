@@ -72,11 +72,11 @@ if (has_lock) {
         sov <- rmts$supported_os_versions
         # if 24.04 is not present, we need to modify the function
         if (release$distro == "ubuntu") {
-            if (!grepl("24.04", body(sov)[2])) {
+            if (!grepl(release$version, body(sov)[2])) {
                 unlockBinding("supported_os_versions", rmts)
-                # modify the list in the body to include 22.04
+                # modify the list in the body to include the current release version
                 vers <- eval(parse(text = as.character(body(sov)[2])))
-                vers$ubuntu <- c(vers$ubuntu, "24.04")
+                vers$ubuntu <- c(vers$ubuntu, release$version)
                 # replace the body
                 body(sov)[2] <- list(str2lang(paste(capture.output(dput(vers)), collapse = "")))
                 # replace the function in the namespace
