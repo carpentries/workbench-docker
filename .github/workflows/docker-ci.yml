@@ -82,8 +82,21 @@ jobs:
         run: env | sort
         shell: bash
 
+  # BUILD
+
   build-amd64:
-    if: ${{ vars.BUILD_AMD || inputs.build-amd || 'true' }}
+    if: |
+      (
+        github.repository == 'carpentries/workbench-docker' &&
+        (
+          github.event_name == 'release' ||
+          github.event_name == 'push' ||
+          (
+            github.event_name == 'workflow_dispatch' &&
+            inputs.build-amd
+          )
+        )
+      )
     runs-on: ubuntu-latest
     outputs:
       image-version: "${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}"
@@ -157,11 +170,7 @@ jobs:
           ) ||
           (
             github.event_name == 'workflow_dispatch' &&
-            inputs.build-minimal &&
-            (
-              startsWith(github.ref_name, 'dev-') ||
-              startsWith(github.ref_name, 'release-')
-            )
+            inputs.build-minimal
           )
         )
       )
@@ -241,11 +250,7 @@ jobs:
           ) ||
           (
             github.event_name == 'workflow_dispatch' &&
-            inputs.build-arm &&
-            (
-              startsWith(github.ref_name, 'dev-') ||
-              startsWith(github.ref_name, 'release-')
-            )
+            inputs.build-arm
           )
         )
       )
@@ -309,6 +314,8 @@ jobs:
           name: docker-arm64
           path: ${{ runner.temp }}/workbench-arm64.tar
           retention-days: 1
+
+  # PUSH TESTS
 
   push-test:
     if: |
@@ -461,6 +468,85 @@ jobs:
           ${{ needs.build-amd64-minimal.outputs.image-version }} \
           "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
 
+  push-arm-test:
+    if: |
+      github.repository == 'carpentries/workbench-docker' &&
+      (
+        github.event_name == 'release' ||
+        (
+          github.event_name == 'push' &&
+          startsWith(github.ref_name, 'release-')
+        ) ||
+        (
+          github.event_name == 'workflow_dispatch' &&
+          (
+            startsWith(github.ref_name, 'dev-') ||
+            startsWith(github.ref_name, 'release-') ||
+            inputs.run-tests
+          )
+        )
+      )
+    needs:
+      - build-arm64
+    permissions:
+      checks: write
+      contents: write
+      pages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        lesson: [carpentries/instructor-training, swcarpentry/shell-novice, swcarpentry/r-novice-inflammation]
+        include:
+          - lesson: carpentries/instructor-training
+            lesson-name: Instructor Training
+          - lesson: swcarpentry/shell-novice
+            lesson-name: Shell Novice
+          - lesson: swcarpentry/r-novice-inflammation
+            lesson-name: Programming with R
+
+    name: ${{ matrix.lesson-name }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash # forces 'Git for Windows' on Windows
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      RENV_PATHS_ROOT: ~/.local/share/renv/
+    steps:
+      - name: Checkout Lesson
+        if: "${{ matrix.lesson != '' }}"
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ matrix.lesson }}
+          path: lesson_tmp
+
+      - name: Set Permissions for Lesson Dir
+        run: |
+          chmod -R 777 ${{ github.workspace }}/lesson_tmp
+          ls -lAh ${{ github.workspace }}/lesson_tmp
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-arm64
+          path: ${{ runner.temp }}
+
+      - name: Load image
+        run: |
+          docker load --input ${{ runner.temp }}/workbench-arm64.tar
+          docker image ls -a
+
+      - name: Run Tests on ${{ matrix.lesson }}
+        run: |
+          docker run --rm \
+          -e GITHUB_PAT=$GITHUB_PAT \
+          -v ${{ github.workspace }}/lesson_tmp:/home/rstudio/lesson \
+          -w /home/rstudio/lesson \
+          ${{ env.DOCKERHUB_REPO }} \
+          "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
+
+  # PUBLISH TEST
+
   publish-test:
     if: |
       github.repository == 'carpentries/workbench-docker' &&
@@ -532,6 +618,8 @@ jobs:
           -w /home/rstudio/lesson \
           ${{ env.DOCKERHUB_REPO }} \
           "/home/rstudio/.workbench/ci_lesson_pre_prep.sh"
+
+  # PUBLISH
 
   publish-amd64:
     if: github.repository == 'carpentries/workbench-docker'
@@ -692,7 +780,7 @@ jobs:
   publish-arm64:
     needs:
         - build-arm64
-        - push-test
+        - push-arm-test
     runs-on: ubuntu-24.04-arm
     steps:
         - name: Login to Docker Hub
