@@ -28,17 +28,17 @@ on:
         type: boolean
       build-amd:
         description: 'Build AMD64 image?'
-        required: false
+        required: true
         default: true
         type: boolean
       build-arm:
         description: 'Build ARM64 image?'
-        required: false
+        required: true
         default: false
         type: boolean
       build-minimal:
         description: 'Build minimal image?'
-        required: false
+        required: true
         default: false
         type: boolean
       run-tests:
